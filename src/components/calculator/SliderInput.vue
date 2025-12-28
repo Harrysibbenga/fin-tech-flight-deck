@@ -107,25 +107,19 @@ const sliderStyle = computed(() => {
 
   if (props.sentimentMode && props.sentimentRanges.length > 0 && currentSentiment.value) {
     const sentiment = currentSentiment.value
-    const ranges = props.sentimentRanges
-    const max = props.max
-    const min = props.min
-    const range = max - min
     const percentage = sliderPercentage.value
     
-    // Create gradient background across all ranges
-    const gradientStops = ranges.map((r) => {
-      const startPercent = ((r.min - min) / range) * 100
-      const endPercent = ((r.max - min) / range) * 100
-      return `${r.color} ${startPercent}%, ${r.color} ${endPercent}%`
-    }).join(', ')
-    
-    // For sentiment mode: show gradient track, fill with current sentiment color up to percentage
+    // Create gradient: filled portion shows sentiment color, unfilled shows full gradient
+    // Full track gradient: red (0-33%) → orange/yellow (34-66%) → green (67-100%)
     baseStyle['--slider-background'] = `linear-gradient(to right, 
       ${sentiment.color} 0%, 
       ${sentiment.color} ${percentage}%, 
-      ${gradientStops.replace(/\(to right, |\)/g, '').split(', ').slice(-1)[0]} ${percentage}%, 
-      ${gradientStops}
+      #ff4444 ${percentage}%, 
+      #ff4444 33%, 
+      #ff9500 33%, 
+      #ff9500 66%, 
+      #00ff88 66%, 
+      #00ff88 100%
     )`
     
     baseStyle['--slider-thumb-color'] = sentiment.color
