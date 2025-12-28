@@ -7,6 +7,7 @@
         v-for="(digit, index) in wholeNumberDigits"
         :key="`whole-${index}`"
         class="odometer-digit-container"
+        :class="{ 'pulse-scale': shouldPulse }"
         :style="{ '--digit-value': digit.currentValue }"
       >
         <div class="odometer-digit-inner" :class="{ 'value-updated': digitUpdated }">
@@ -22,6 +23,7 @@
       <!-- Decimal digit -->
       <div
         class="odometer-digit-container"
+        :class="{ 'pulse-scale': shouldPulse }"
         :style="{ '--digit-value': decimalDigit.currentValue }"
       >
         <div class="odometer-digit-inner" :class="{ 'value-updated': digitUpdated }">
@@ -46,6 +48,8 @@ const props = defineProps({
 
 const isAnimating = ref(false)
 const digitUpdated = ref(false)
+const hasInitialized = ref(false)
+const shouldPulse = ref(false)
 
 // Digit state for each position
 const wholeNumberDigits = ref([])
@@ -54,19 +58,30 @@ const decimalDigit = ref({ currentValue: 0, displayValue: '0' })
 /**
  * Initialize digits array based on max expected value
  * We'll support up to 999.9 years
+ * Always ensures at least one whole number digit for "0.0" display
  */
-const initializeDigits = (initialValue = 0) => {
+const initializeDigits = (initialValue = 0, animate = false) => {
   const wholePart = Math.floor(initialValue)
   const decimalPart = Math.floor((initialValue % 1) * 10)
 
-  // Create array for whole number digits (support up to 3 digits)
-  const wholeString = wholePart.toString()
+  // Always ensure at least one whole number digit for "0.0" display
+  const wholeString = wholePart.toString() || '0'
   wholeNumberDigits.value = wholeString.split('').map((char, index) => ({
     position: index,
     currentValue: parseInt(char, 10),
     displayValue: char,
     targetValue: parseInt(char, 10)
   }))
+
+  // If no digits, ensure we have at least "0"
+  if (wholeNumberDigits.value.length === 0) {
+    wholeNumberDigits.value = [{
+      position: 0,
+      currentValue: 0,
+      displayValue: '0',
+      targetValue: 0
+    }]
+  }
 
   decimalDigit.value = {
     currentValue: decimalPart,
@@ -118,7 +133,7 @@ const animateDigit = (digit, targetValue, duration) => {
 /**
  * Parse value into digits and animate them
  */
-const animateToValue = async (targetValue) => {
+const animateToValue = async (targetValue, triggerPulse = true) => {
   // Ensure value is at least 0.1 to avoid showing 0.0
   const safeValue = Math.max(0.1, targetValue)
   const wholePart = Math.floor(safeValue)
@@ -128,6 +143,7 @@ const animateToValue = async (targetValue) => {
   const targetDigits = wholeString.split('').map(char => parseInt(char, 10))
 
   // Ensure we have enough digit containers (support up to 999)
+  // Always maintain at least one digit for proper layout
   while (wholeNumberDigits.value.length < targetDigits.length) {
     wholeNumberDigits.value.unshift({
       position: -1,
@@ -137,10 +153,20 @@ const animateToValue = async (targetValue) => {
     })
   }
 
-  // If we have more digits than needed, keep only necessary ones
-  if (targetDigits.length < wholeNumberDigits.value.length) {
+  // If we have more digits than needed, keep only necessary ones (but always at least 1)
+  if (targetDigits.length < wholeNumberDigits.value.length && targetDigits.length > 0) {
     const excess = wholeNumberDigits.value.length - targetDigits.length
     wholeNumberDigits.value = wholeNumberDigits.value.slice(excess)
+  }
+
+  // Ensure we always have at least one digit
+  if (wholeNumberDigits.value.length === 0) {
+    wholeNumberDigits.value = [{
+      position: 0,
+      currentValue: 0,
+      displayValue: '0',
+      targetValue: 0
+    }]
   }
 
   isAnimating.value = true
@@ -157,37 +183,38 @@ const animateToValue = async (targetValue) => {
   await Promise.all(animationPromises)
   isAnimating.value = false
 
-  // Trigger pulse animation
-  digitUpdated.value = true
-  setTimeout(() => {
-    digitUpdated.value = false
-  }, 500)
+  // Trigger pulse animation when value settles
+  if (triggerPulse) {
+    shouldPulse.value = true
+    setTimeout(() => {
+      shouldPulse.value = false
+    }, 600)
+  }
 }
 
-// Initialize on mount - start at 0 and animate to calculated value
+// Initialize on mount - immediately show "0.0" then animate
 onMounted(() => {
-  // Start from 0 for initial animation
-  initializeDigits(0)
+  // Immediately show "0.0" with no animation
+  initializeDigits(0, false)
+  hasInitialized.value = true
 
-  // Animate to actual value after a brief delay to ensure calculations are ready
-  if (props.value !== undefined && !isNaN(props.value) && props.value >= 0) {
-    // Use nextTick to ensure parent calculations have completed
-    setTimeout(() => {
-      const targetValue = Math.max(0.1, props.value)
-      animateToValue(targetValue)
-    }, 400)
-  } else {
-    // If no value yet, initialize with 0.1 and wait for value
-    initializeDigits(0.1)
-  }
+  // After 100ms delay, animate to calculated value
+  // Always run this animation on first load, even if value is already computed
+  setTimeout(() => {
+    const targetValue = props.value !== undefined && !isNaN(props.value) && props.value >= 0
+      ? Math.max(0.1, props.value)
+      : 0.1
+    
+    animateToValue(targetValue, true)
+  }, 100)
 })
 
 // Watch for value changes after initial load
 watch(() => props.value, (newVal, oldVal) => {
-  if (newVal !== undefined && !isNaN(newVal) && newVal >= 0) {
-    // Only animate if value actually changed (not initial render)
+  // Only animate if value actually changed AND we've already initialized
+  if (hasInitialized.value && newVal !== undefined && !isNaN(newVal) && newVal >= 0) {
     if (oldVal !== undefined && newVal !== oldVal) {
-      animateToValue(newVal)
+      animateToValue(newVal, true)
     }
   }
 })
@@ -228,11 +255,33 @@ watch(() => props.value, (newVal, oldVal) => {
   justify-content: center;
   background: #1a1f2e;
   border-radius: 12px;
+  /* Fixed dimensions to prevent shifting/resizing during animation */
+  width: 60px;
   min-width: 60px;
+  max-width: 60px;
+  height: 72px;
   min-height: 72px;
+  max-height: 72px;
   padding: var(--spacing-3) var(--spacing-4);
   box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
   overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.odometer-digit-container.pulse-scale {
+  animation: scalePulse 0.6s ease-out;
+}
+
+@keyframes scalePulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .odometer-digit-inner {
@@ -292,8 +341,12 @@ watch(() => props.value, (newVal, oldVal) => {
 
 @media (max-width: 768px) {
   .odometer-digit-container {
+    width: 48px;
     min-width: 48px;
+    max-width: 48px;
+    height: 60px;
     min-height: 60px;
+    max-height: 60px;
     padding: var(--spacing-2) var(--spacing-3);
   }
 
@@ -315,6 +368,11 @@ watch(() => props.value, (newVal, oldVal) => {
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .odometer-digit-inner {
+    transition: none;
+    animation: none;
+  }
+
+  .odometer-digit-container {
     transition: none;
     animation: none;
   }
