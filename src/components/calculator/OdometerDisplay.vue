@@ -5,7 +5,7 @@
     <!-- Skeleton loader while calculating -->
     <div v-if="loading" class="odometer-skeleton">
       <Skeleton width="60px" height="72px" radius="12px" />
-      <Skeleton width="16px" height="72px" radius="4px" />
+      <div class="odometer-separator" aria-hidden="true"></div>
       <Skeleton width="60px" height="72px" radius="12px" />
     </div>
 
@@ -382,34 +382,10 @@ watch(() => props.value, (newVal, oldVal) => {
   min-height: 80px;
 }
 
-.skeleton-digit {
-  width: 60px;
-  height: 72px;
-  border-radius: 12px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0.05) 100%
-  );
-  background-size: 1000px 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-.skeleton-separator {
-  width: 16px;
-  height: 72px;
-}
-
 @media (max-width: 768px) {
-  .skeleton-digit {
-    width: 48px;
-    height: 60px;
-  }
-
-  .skeleton-separator {
-    width: 12px;
-    height: 60px;
+  .odometer-skeleton {
+    gap: 6px;
+    min-height: 60px;
   }
 }
 
