@@ -3,8 +3,8 @@
     <label :for="id" class="slider-label">
       {{ label }}
     </label>
-    <div 
-      class="slider-value" 
+    <div
+      class="slider-value"
       :id="`${id}-value`"
       :style="{ color: sliderValueColor }"
     >
@@ -108,20 +108,20 @@ const sliderStyle = computed(() => {
   if (props.sentimentMode && props.sentimentRanges.length > 0 && currentSentiment.value) {
     const sentiment = currentSentiment.value
     const percentage = sliderPercentage.value
-    
+
     // Create gradient: filled portion shows sentiment color, unfilled shows full gradient
     // Full track gradient: red (0-33%) → orange/yellow (34-66%) → green (67-100%)
-    baseStyle['--slider-background'] = `linear-gradient(to right, 
-      ${sentiment.color} 0%, 
-      ${sentiment.color} ${percentage}%, 
-      #ff4444 ${percentage}%, 
-      #ff4444 33%, 
-      #ff9500 33%, 
-      #ff9500 66%, 
-      #00ff88 66%, 
+    baseStyle['--slider-background'] = `linear-gradient(to right,
+      ${sentiment.color} 0%,
+      ${sentiment.color} ${percentage}%,
+      #ff4444 ${percentage}%,
+      #ff4444 33%,
+      #ff9500 33%,
+      #ff9500 66%,
+      #00ff88 66%,
       #00ff88 100%
     )`
-    
+
     baseStyle['--slider-thumb-color'] = sentiment.color
     baseStyle['--slider-fill-color'] = sentiment.color
   } else {

@@ -1,29 +1,45 @@
 <template>
   <div class="optimization-section">
-    <div class="toggle-container" :class="{ active: modelValue }" @click="toggleOptimization">
+    <div class="toggle-container" @click="toggleView">
       <div class="toggle-header">
-        <h3>{{ modelValue ? 'Optimized Strategy Active' : 'Activate Optimization' }}</h3>
-        <p>{{ modelValue ? 'See your accelerated growth path' : 'Discover your potential' }}</p>
+        <h3>Compare Strategies</h3>
+        <p>{{ viewMode === 'side-by-side' ? 'Viewing both trajectories together' : 'Showing the difference between strategies' }}</p>
       </div>
 
-      <button
-        class="toggle-button"
-        :class="{ active: modelValue }"
-        type="button"
-        :aria-label="modelValue ? 'Disable optimization' : 'Enable optimization'"
-        :aria-pressed="modelValue"
-      >
-        <span class="toggle-slider"></span>
-        <span class="toggle-label">{{ modelValue ? 'ON' : 'OFF' }}</span>
-      </button>
+      <div class="toggle-control">
+        <span class="view-label" :class="{ active: viewMode === 'side-by-side' }">Side by Side</span>
+        <button
+          class="toggle-button"
+          :class="{ active: viewMode === 'difference' }"
+          type="button"
+          :aria-label="viewMode === 'side-by-side' ? 'Switch to difference view' : 'Switch to side by side view'"
+          :aria-pressed="viewMode === 'difference'"
+        >
+          <span class="toggle-slider"></span>
+        </button>
+        <span class="view-label" :class="{ active: viewMode === 'difference' }">Difference View</span>
+      </div>
     </div>
 
-    <transition name="success-fade">
-      <div v-if="modelValue" class="success-state">
-        <div class="success-icon">✓</div>
-        <div class="success-text">
-          <h4>Success! Your optimized path is active</h4>
-          <p>You could gain <strong>{{ formatYears(yearsGained) }}</strong> by optimizing your strategy</p>
+    <transition name="view-fade">
+      <div class="view-info" :key="viewMode">
+        <div class="info-icon">
+          <svg v-if="viewMode === 'side-by-side'" width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M3 3h8v8H3V3zM13 3h8v8h-8V3zM3 13h8v8H3v-8zM13 13h8v8h-8v-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M3 12h18M12 3v18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="12" cy="12" r="2" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="info-text">
+          <h4>{{ viewMode === 'side-by-side' ? 'Both Trajectories' : 'Difference Highlighted' }}</h4>
+          <p v-if="viewMode === 'side-by-side'">
+            Compare your current path with the optimized strategy side by side
+          </p>
+          <p v-else>
+            See the exact value difference between strategies over time
+          </p>
         </div>
       </div>
     </transition>
@@ -31,23 +47,25 @@
 </template>
 
 <script setup>
-import { formatYears } from '@/utils/formatters'
+import { computed } from 'vue'
 
 const props = defineProps({
   modelValue: {
-    type: Boolean,
-    default: false
-  },
-  yearsGained: {
-    type: Number,
-    default: 0
+    type: String,
+    default: 'side-by-side',
+    validator: (value) => ['side-by-side', 'difference'].includes(value)
   }
 })
 
 const emit = defineEmits(['update:modelValue'])
 
-const toggleOptimization = () => {
-  emit('update:modelValue', !props.modelValue)
+const viewMode = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value)
+})
+
+const toggleView = () => {
+  viewMode.value = viewMode.value === 'side-by-side' ? 'difference' : 'side-by-side'
 }
 </script>
 
@@ -74,15 +92,6 @@ const toggleOptimization = () => {
   background: var(--bg-tertiary);
 }
 
-.toggle-container.active {
-  border-color: var(--accent-primary);
-  background: linear-gradient(
-    135deg,
-    rgba(0, 212, 255, 0.1) 0%,
-    rgba(124, 58, 237, 0.1) 100%
-  );
-}
-
 .toggle-header {
   flex: 1;
 }
@@ -99,10 +108,29 @@ const toggleOptimization = () => {
   font-size: var(--text-sm);
 }
 
+.toggle-control {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  flex-shrink: 0;
+}
+
+.view-label {
+  color: var(--text-tertiary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  transition: color var(--duration-normal) var(--ease-in-out);
+}
+
+.view-label.active {
+  color: var(--text-primary);
+  font-weight: var(--font-semibold);
+}
+
 .toggle-button {
   position: relative;
-  width: 80px;
-  height: 40px;
+  width: 64px;
+  height: 32px;
   background: var(--bg-primary);
   border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-full);
@@ -119,10 +147,10 @@ const toggleOptimization = () => {
 
 .toggle-slider {
   position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 30px;
-  height: 30px;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
   background: white;
   border-radius: 50%;
   transition: transform var(--duration-normal) var(--ease-bounce);
@@ -130,98 +158,59 @@ const toggleOptimization = () => {
 }
 
 .toggle-button.active .toggle-slider {
-  transform: translateX(40px);
+  transform: translateX(32px);
 }
 
-.toggle-label {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-tertiary);
-  font-size: var(--text-xs);
-  font-weight: var(--font-bold);
-  pointer-events: none;
-  transition: all var(--duration-normal) var(--ease-in-out);
-}
-
-.toggle-button.active .toggle-label {
-  left: 12px;
-  right: auto;
-  color: white;
-}
-
-.success-state {
+.view-info {
   margin-top: var(--spacing-6);
   padding: var(--spacing-6);
-  background: rgba(0, 255, 136, 0.1);
-  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: var(--radius-lg);
   display: flex;
   gap: var(--spacing-4);
   align-items: center;
 }
 
-.success-icon {
+.info-icon {
   width: 48px;
   height: 48px;
-  background: var(--accent-success);
+  background: rgba(0, 212, 255, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--bg-primary);
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
+  color: var(--accent-primary);
   flex-shrink: 0;
-  animation: checkmarkPop 0.6s var(--ease-bounce);
 }
 
-.success-text h4 {
-  color: var(--accent-success);
+.info-text h4 {
+  color: var(--text-primary);
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
   margin-bottom: var(--spacing-2);
 }
 
-.success-text p {
+.info-text p {
   color: var(--text-secondary);
   font-size: var(--text-sm);
-}
-
-.success-text strong {
-  color: var(--accent-success);
-  font-weight: var(--font-bold);
+  margin: 0;
 }
 
 /* Animation */
-.success-fade-enter-active,
-.success-fade-leave-active {
+.view-fade-enter-active,
+.view-fade-leave-active {
   transition: all var(--duration-slow) var(--ease-in-out);
 }
 
-.success-fade-enter-from {
+.view-fade-enter-from {
   opacity: 0;
-  transform: translateY(-20px);
+  transform: translateY(-10px);
 }
 
-.success-fade-leave-to {
+.view-fade-leave-to {
   opacity: 0;
-  transform: translateY(20px);
-}
-
-@keyframes checkmarkPop {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  transform: translateY(10px);
 }
 
 @media (max-width: 768px) {
@@ -231,14 +220,14 @@ const toggleOptimization = () => {
     gap: var(--spacing-4);
   }
 
-  .toggle-button {
-    align-self: flex-end;
+  .toggle-control {
+    justify-content: space-between;
+    width: 100%;
   }
 
-  .success-state {
+  .view-info {
     flex-direction: column;
     text-align: center;
   }
 }
 </style>
-

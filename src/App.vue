@@ -29,19 +29,18 @@
       <section class="results-section">
         <OdometerDisplay :value="results.yearsGained" />
 
-        <div class="chart-wrapper" v-memo="[chartData.baseline, chartData.optimized, isOptimized]">
+        <div class="chart-wrapper" v-memo="[chartData.baseline, chartData.optimized, chartData.difference, viewMode]">
           <LineChart
             :baseline-data="chartData.baseline"
             :optimized-data="chartData.optimized"
+            :difference-data="chartData.difference"
             :labels="chartData.labels"
+            :view-mode="viewMode"
             :height="400"
           />
         </div>
 
-        <OptimizationToggle
-          v-model="isOptimized"
-          :years-gained="results.yearsGained"
-        />
+        <OptimizationToggle v-model="viewMode" />
       </section>
 
       <!-- Lead Gate -->
@@ -72,11 +71,11 @@ const sliderConfigs = SLIDER_CONFIGS
 // Initialize slider values with defaults
 const sliderValues = ref(getDefaultSliderValues())
 
-// Optimization toggle state
-const isOptimized = ref(false)
+// View mode state: 'side-by-side' or 'difference'
+const viewMode = ref('side-by-side')
 
-// Use calculations composable
-const { results, chartData } = useCalculations(sliderValues, isOptimized)
+// Use calculations composable (always calculates both trajectories)
+const { results, chartData } = useCalculations(sliderValues)
 </script>
 
 <style scoped>

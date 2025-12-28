@@ -45,6 +45,10 @@ const props = defineProps({
     type: Array,
     required: true
   },
+  differenceData: {
+    type: Array,
+    default: () => []
+  },
   labels: {
     type: Array,
     default: () => []
@@ -52,14 +56,43 @@ const props = defineProps({
   height: {
     type: Number,
     default: 400
+  },
+  viewMode: {
+    type: String,
+    default: 'side-by-side',
+    validator: (value) => ['side-by-side', 'difference'].includes(value)
   }
 })
 
 const chartData = computed(() => {
+  const labels = props.labels.length > 0
+    ? props.labels
+    : Array.from({ length: Math.max(props.baselineData.length, props.optimizedData.length) }, (_, i) => `Year ${i + 1}`)
+
+  if (props.viewMode === 'difference' && props.differenceData.length > 0) {
+    // Difference view: show only the difference line
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Value Difference',
+          data: props.differenceData,
+          borderColor: '#00ff88',
+          backgroundColor: 'rgba(0, 255, 136, 0.2)',
+          borderWidth: 3,
+          tension: 0.4,
+          pointRadius: 0,
+          pointHoverRadius: 6,
+          fill: true,
+          fillColor: '#00ff88'
+        }
+      ]
+    }
+  }
+
+  // Side by side view: show both trajectories
   return {
-    labels: props.labels.length > 0
-      ? props.labels
-      : Array.from({ length: Math.max(props.baselineData.length, props.optimizedData.length) }, (_, i) => `Year ${i + 1}`),
+    labels,
     datasets: [
       {
         label: 'Current Trajectory',

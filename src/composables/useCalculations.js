@@ -15,7 +15,7 @@ import { CALCULATION_CONSTANTS } from '@/utils/constants'
  *   @returns {import('vue').ComputedRef<Object>} results - Computed calculation results
  *   @returns {import('vue').ComputedRef<Object>} chartData - Computed chart data
  */
-export function useCalculations(sliderValues, isOptimized) {
+export function useCalculations(sliderValues) {
   /**
    * Calculate baseline growth trajectory (current strategy)
    * @param {number} equity - Current home equity
@@ -91,11 +91,9 @@ export function useCalculations(sliderValues, isOptimized) {
     const { age, equity, cash, monthlySavings } = sliderValues.value
     const years = CALCULATION_CONSTANTS.YEARS_PROJECTION
 
-    // Calculate trajectories
+    // Always calculate both trajectories
     const baselineTrajectory = calculateBaselineTrajectory(equity, cash, monthlySavings, years)
-    const optimizedTrajectory = isOptimized.value
-      ? calculateOptimizedTrajectory(equity, cash, monthlySavings, years)
-      : baselineTrajectory
+    const optimizedTrajectory = calculateOptimizedTrajectory(equity, cash, monthlySavings, years)
 
     // Get final values
     const baselineFinal = baselineTrajectory[baselineTrajectory.length - 1]
@@ -124,14 +122,19 @@ export function useCalculations(sliderValues, isOptimized) {
     const { equity, cash, monthlySavings } = sliderValues.value
     const years = CALCULATION_CONSTANTS.YEARS_PROJECTION
 
+    // Always calculate both trajectories
     const baselineTrajectory = calculateBaselineTrajectory(equity, cash, monthlySavings, years)
-    const optimizedTrajectory = isOptimized.value
-      ? calculateOptimizedTrajectory(equity, cash, monthlySavings, years)
-      : baselineTrajectory
+    const optimizedTrajectory = calculateOptimizedTrajectory(equity, cash, monthlySavings, years)
+
+    // Calculate difference for difference view
+    const differenceTrajectory = optimizedTrajectory.map((opt, index) => {
+      return opt - baselineTrajectory[index]
+    })
 
     return {
       baseline: baselineTrajectory,
       optimized: optimizedTrajectory,
+      difference: differenceTrajectory,
       labels: Array.from({ length: years + 1 }, (_, i) => `Year ${i + 1}`)
     }
   })
