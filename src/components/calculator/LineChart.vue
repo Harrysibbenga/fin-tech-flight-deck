@@ -111,8 +111,16 @@ const chartData = computed(() => {
         data: props.optimizedData,
         borderColor: '#00d4ff',
         backgroundColor: (context) => {
+          if (!context.chart.chartArea) {
+            return 'rgba(0, 212, 255, 0.1)'
+          }
           const ctx = context.chart.ctx
-          const gradient = ctx.createLinearGradient(0, 0, 0, context.chart.height)
+          const gradient = ctx.createLinearGradient(
+            0,
+            context.chart.chartArea.top,
+            0,
+            context.chart.chartArea.bottom
+          )
           gradient.addColorStop(0, 'rgba(0, 212, 255, 0)')
           gradient.addColorStop(1, 'rgba(0, 212, 255, 0.15)')
           return gradient
@@ -128,14 +136,33 @@ const chartData = computed(() => {
 })
 
 const chartOptions = computed(() => {
-  const options = { ...CHART_OPTIONS }
+  const options = JSON.parse(JSON.stringify(CHART_OPTIONS)) // Deep clone
 
-  // Update Y-axis formatting for difference view
-  if (props.viewMode === 'difference') {
-    options.scales.y.ticks.callback = (value) => {
-      return `£${(value / 1000).toFixed(0)}k`
+  // Update Y-axis formatting
+  options.scales.y.ticks.callback = (value) => {
+    return `£${(value / 1000).toFixed(0)}k`
+  }
+  options.scales.y.ticks.color = '#8b92a8'
+
+  // Update X-axis to show only Year 5, 10, 15, 20, 25, 30
+  if (options.scales.x && options.scales.x.ticks) {
+    options.scales.x.ticks.callback = function(value, index, ticks) {
+      const labels = this.chart.data.labels
+      if (labels && labels[index]) {
+        const label = labels[index]
+        if (typeof label === 'string' && label.includes('Year')) {
+          const yearNum = parseInt(label.replace('Year ', ''))
+          if (yearNum % 5 === 0 && yearNum > 0) {
+            return label
+          }
+        }
+      }
+      return ''
     }
-    // Y-axis starts from 0 for difference view
+  }
+
+  // Y-axis starts from 0 for difference view
+  if (props.viewMode === 'difference') {
     options.scales.y.beginAtZero = true
   }
 

@@ -84,8 +84,8 @@ export const CHART_OPTIONS = {
         font: { size: 12 },
         callback: function(value, index, ticks) {
           const label = this.getLabelForValue(value)
-          // Only show labels for Year 5, Year 10, Year 15, etc.
-          if (label && label.includes('Year')) {
+          // Only show labels for Year 5, Year 10, Year 15, Year 20, Year 25, Year 30
+          if (label && typeof label === 'string' && label.includes('Year')) {
             const yearNum = parseInt(label.replace('Year ', ''))
             if (yearNum % 5 === 0 && yearNum > 0) {
               return label
@@ -94,7 +94,8 @@ export const CHART_OPTIONS = {
           return ''
         },
         maxRotation: 0,
-        autoSkip: false
+        autoSkip: true,
+        autoSkipPadding: 10
       }
     }
   }
