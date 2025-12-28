@@ -29,16 +29,22 @@
       <section class="results-section">
         <OdometerDisplay :value="results.yearsGained" />
 
-        <div class="chart-wrapper" v-memo="[chartData.baseline, chartData.optimized, chartData.difference, viewMode]">
-          <LineChart
-            :baseline-data="chartData.baseline"
-            :optimized-data="chartData.optimized"
-            :difference-data="chartData.difference"
-            :labels="chartData.labels"
-            :view-mode="viewMode"
-            :height="400"
-          />
-        </div>
+        <transition name="chart-fade" mode="out-in">
+          <div 
+            class="chart-wrapper" 
+            :key="viewMode"
+            v-memo="[chartData.baseline, chartData.optimized, chartData.difference, viewMode]"
+          >
+            <LineChart
+              :baseline-data="chartData.baseline"
+              :optimized-data="chartData.optimized"
+              :difference-data="chartData.difference"
+              :labels="chartData.labels"
+              :view-mode="viewMode"
+              :height="400"
+            />
+          </div>
+        </transition>
 
         <OptimizationToggle v-model="viewMode" />
       </section>
@@ -133,6 +139,23 @@ section h2 {
 
 .chart-wrapper {
   margin-bottom: var(--spacing-8);
+}
+
+/* Chart transition animation */
+.chart-fade-enter-active,
+.chart-fade-leave-active {
+  transition: opacity var(--duration-slow) var(--ease-in-out),
+              transform var(--duration-slow) var(--ease-in-out);
+}
+
+.chart-fade-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.chart-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 
 @media (max-width: 768px) {
