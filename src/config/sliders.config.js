@@ -48,7 +48,18 @@ export const SLIDER_CONFIGS = [
     max: 100,
     step: 1,
     default: 50,
-    format: (val) => `${val}%`
+    format: (val) => {
+      if (val >= 0 && val <= 33) return 'Not Interested'
+      if (val >= 34 && val <= 66) return 'Considering'
+      if (val >= 67 && val <= 100) return 'Definitely'
+      return 'Considering'
+    },
+    sentimentMode: true,
+    sentimentRanges: [
+      { min: 0, max: 33, color: '#ff4444', label: 'Not Interested' },
+      { min: 34, max: 66, color: '#ff9500', label: 'Considering' },
+      { min: 67, max: 100, color: '#00ff88', label: 'Definitely' }
+    ]
   }
 ]
 

@@ -20,6 +20,8 @@
           :step="slider.step"
           v-model="sliderValues[slider.id]"
           :format-fn="slider.format"
+          :sentiment-mode="slider.sentimentMode || false"
+          :sentiment-ranges="slider.sentimentRanges || []"
         />
       </section>
 

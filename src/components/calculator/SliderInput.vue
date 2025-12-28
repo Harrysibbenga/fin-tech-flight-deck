@@ -3,7 +3,11 @@
     <label :for="id" class="slider-label">
       {{ label }}
     </label>
-    <div class="slider-value" :id="`${id}-value`">
+    <div 
+      class="slider-value" 
+      :id="`${id}-value`"
+      :style="{ color: sliderValueColor }"
+    >
       {{ formattedValue }}
     </div>
     <input
@@ -58,6 +62,14 @@ const props = defineProps({
   formatFn: {
     type: Function,
     default: (val) => String(val)
+  },
+  sentimentMode: {
+    type: Boolean,
+    default: false
+  },
+  sentimentRanges: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -76,10 +88,52 @@ const sliderPercentage = computed(() => {
   return (position / range) * 100
 })
 
+const currentSentiment = computed(() => {
+  if (!props.sentimentMode || props.sentimentRanges.length === 0) {
+    return null
+  }
+
+  const value = props.modelValue
+  return props.sentimentRanges.find(
+    range => value >= range.min && value <= range.max
+  ) || props.sentimentRanges[1] // Default to middle range
+})
+
 const sliderStyle = computed(() => {
-  return {
+  const baseStyle = {
     '--slider-percentage': `${sliderPercentage.value}%`
   }
+
+  if (props.sentimentMode && currentSentiment.value) {
+    const sentiment = currentSentiment.value
+    
+    // Create gradient based on sentiment
+    if (sentiment.color === '#ff4444') {
+      // Red gradient (Not Interested)
+      baseStyle['--slider-fill-color'] = sentiment.color
+      baseStyle['--slider-thumb-color'] = sentiment.color
+    } else if (sentiment.color === '#ff9500') {
+      // Yellow/Orange gradient (Considering)
+      baseStyle['--slider-fill-color'] = sentiment.color
+      baseStyle['--slider-thumb-color'] = sentiment.color
+    } else if (sentiment.color === '#00ff88') {
+      // Green gradient (Definitely)
+      baseStyle['--slider-fill-color'] = sentiment.color
+      baseStyle['--slider-thumb-color'] = sentiment.color
+    }
+  } else {
+    baseStyle['--slider-fill-color'] = 'var(--accent-primary)'
+    baseStyle['--slider-thumb-color'] = 'var(--accent-primary)'
+  }
+
+  return baseStyle
+})
+
+const sliderValueColor = computed(() => {
+  if (props.sentimentMode && currentSentiment.value) {
+    return currentSentiment.value.color
+  }
+  return 'var(--accent-primary)'
 })
 
 const handleInput = (event) => {
@@ -140,7 +194,6 @@ const handleMouseUp = () => {
 }
 
 .slider-value {
-  color: var(--accent-primary);
   font-size: var(--text-2xl);
   font-weight: var(--font-bold);
   margin-bottom: var(--spacing-4);
@@ -149,6 +202,7 @@ const handleMouseUp = () => {
   min-height: 2.5rem;
   display: flex;
   align-items: center;
+  transition: color var(--duration-normal) var(--ease-in-out);
 }
 
 .slider-input {
@@ -159,13 +213,13 @@ const handleMouseUp = () => {
   border-radius: 3px;
   background: linear-gradient(
     to right,
-    var(--accent-primary) 0%,
-    var(--accent-primary) var(--slider-percentage),
+    var(--slider-fill-color, var(--accent-primary)) 0%,
+    var(--slider-fill-color, var(--accent-primary)) var(--slider-percentage),
     var(--bg-primary) var(--slider-percentage),
     var(--bg-primary) 100%
   );
   outline: none;
-  transition: background var(--duration-fast);
+  transition: background var(--duration-normal) var(--ease-in-out);
   cursor: pointer;
 }
 
@@ -176,7 +230,7 @@ const handleMouseUp = () => {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--accent-primary);
+  background: var(--slider-thumb-color, var(--accent-primary));
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 212, 255, 0.5),
               0 0 0 4px rgba(0, 212, 255, 0.2);
@@ -185,8 +239,8 @@ const handleMouseUp = () => {
 
 .slider-input::-webkit-slider-thumb:hover {
   transform: scale(1.2);
-  box-shadow: 0 4px 16px rgba(0, 212, 255, 0.6),
-              0 0 0 6px rgba(0, 212, 255, 0.3);
+  box-shadow: 0 4px 16px var(--slider-thumb-color, rgba(0, 212, 255, 0.6)),
+              0 0 0 6px var(--slider-thumb-color, rgba(0, 212, 255, 0.3));
 }
 
 .slider-input:active::-webkit-slider-thumb {
@@ -198,7 +252,7 @@ const handleMouseUp = () => {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--accent-primary);
+  background: var(--slider-thumb-color, var(--accent-primary));
   cursor: pointer;
   border: none;
   box-shadow: 0 2px 8px rgba(0, 212, 255, 0.5);
@@ -207,7 +261,7 @@ const handleMouseUp = () => {
 
 .slider-input::-moz-range-thumb:hover {
   transform: scale(1.2);
-  box-shadow: 0 4px 16px rgba(0, 212, 255, 0.6);
+  box-shadow: 0 4px 16px var(--slider-thumb-color, rgba(0, 212, 255, 0.6));
 }
 
 .slider-input:active::-moz-range-thumb {
