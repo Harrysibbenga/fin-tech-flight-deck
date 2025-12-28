@@ -51,7 +51,7 @@ export function useCalculations(sliderValues) {
   const calculateOptimizedTrajectory = (equity, cash, monthlySavings, years) => {
     const trajectory = []
     let currentValue = equity + cash
-    
+
     // Apply leverage multiplier to the growth rate (not the principal)
     // Effective growth rate = optimized return * leverage multiplier
     const leveragedGrowthRate = CALCULATION_CONSTANTS.OPTIMIZED_ANNUAL_RETURN * CALCULATION_CONSTANTS.LEVERAGE_MULTIPLIER

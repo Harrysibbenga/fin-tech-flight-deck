@@ -200,13 +200,13 @@ onMounted(() => {
     // Immediately show "0.0" with no animation
     initializeDigits(0, false)
     hasInitialized.value = true
-    
+
     // Then animate to calculated value
     setTimeout(() => {
       const targetValue = props.value !== undefined && !isNaN(props.value) && props.value >= 0
         ? Math.max(0.1, props.value)
         : 0.1
-      
+
       animateToValue(targetValue, true)
     }, 50)
   }, 100)

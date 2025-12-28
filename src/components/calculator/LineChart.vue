@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -221,7 +221,7 @@ const chartOptions = computed(() => {
     options.plugins.legend.labels.boxWidth = 12
     options.plugins.legend.labels.boxHeight = 12
   }
-  
+
   // Use circle point style for cleaner look
   options.plugins.legend.labels.usePointStyle = true
 
@@ -246,9 +246,9 @@ const chartAreaAvailable = ref(false)
 
 // Check if chart data is loading
 const isLoading = computed(() => {
-  return !props.baselineData || 
-         props.baselineData.length === 0 || 
-         !props.optimizedData || 
+  return !props.baselineData ||
+         props.baselineData.length === 0 ||
+         !props.optimizedData ||
          props.optimizedData.length === 0
 })
 
@@ -322,7 +322,7 @@ onUnmounted(() => {
   .chart-container {
     padding: var(--spacing-4);
   }
-  
+
   .chart-canvas {
     filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.25));
   }

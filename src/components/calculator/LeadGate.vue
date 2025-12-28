@@ -150,7 +150,7 @@ const downloadPDF = () => {
     doc.setTextColor(139, 146, 168)
     const sliderValues = props.sliderValues || {}
     const results = props.results || {}
-    
+
     if (sliderValues.age !== undefined) {
       doc.text(`Age: ${sliderValues.age} years`, margin + 5, yPosition)
       yPosition += 7
@@ -167,7 +167,7 @@ const downloadPDF = () => {
       doc.text(`Monthly Savings: ${formatCurrency(sliderValues.monthlySavings)}/month`, margin + 5, yPosition)
       yPosition += 7
     }
-    
+
     yPosition += 10
 
     // Results
@@ -178,7 +178,7 @@ const downloadPDF = () => {
 
     doc.setFontSize(11)
     doc.setTextColor(139, 146, 168)
-    
+
     if (results.yearsGained !== undefined) {
       doc.setTextColor(0, 255, 136)
       doc.text(`Years You Could Gain: ${formatNumber(results.yearsGained, 1)} years`, margin + 5, yPosition)
@@ -207,7 +207,7 @@ const downloadPDF = () => {
     // Footer note
     doc.setFontSize(9)
     doc.setTextColor(90, 96, 112)
-    doc.text('For illustration purposes only. Consult a financial advisor for personalized advice.', 
+    doc.text('For illustration purposes only. Consult a financial advisor for personalized advice.',
       pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' })
 
     // Download
