@@ -84,15 +84,15 @@ const sliderStyle = computed(() => {
 
 const handleInput = (event) => {
   const value = parseFloat(event.target.value)
-  
+
   // Update UI immediately (for smooth slider movement)
   emit('update:modelValue', value)
-  
+
   // Clear existing debounce timer
   if (debounceTimer) {
     clearTimeout(debounceTimer)
   }
-  
+
   // Debounce calculations (16ms for 60fps)
   debounceTimer = setTimeout(() => {
     // Additional emit for calculation updates if needed

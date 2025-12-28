@@ -3,10 +3,10 @@ import { DEBOUNCE_DELAY } from '@/utils/constants'
 
 /**
  * Composable for managing slider state with debouncing
- * 
+ *
  * Debounces slider updates to improve performance during rapid value changes.
  * Updates UI immediately but delays callback execution.
- * 
+ *
  * @param {number} initialValue - Initial slider value
  * @param {Function|null} callback - Optional callback function called after debounce delay (default: 16ms)
  * @returns {Object} Slider state and control methods

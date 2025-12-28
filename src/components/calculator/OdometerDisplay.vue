@@ -29,11 +29,7 @@ const props = defineProps({
 const displayValue = ref(0)
 const isAnimating = ref(false)
 
-// Animate value changes
-watch(() => props.value, (newVal) => {
-  animateValue(displayValue.value, newVal, ANIMATION_DURATION.ODOMETER)
-}, { immediate: true })
-
+// Define animateValue before using it in watch
 const animateValue = (start, end, duration) => {
   const range = end - start
   if (Math.abs(range) < 0.01) {
@@ -62,6 +58,11 @@ const animateValue = (start, end, duration) => {
 
   requestAnimationFrame(step)
 }
+
+// Animate value changes
+watch(() => props.value, (newVal) => {
+  animateValue(displayValue.value, newVal, ANIMATION_DURATION.ODOMETER)
+}, { immediate: true })
 
 const formattedDigits = computed(() => {
   return displayValue.value.toFixed(1).split('')

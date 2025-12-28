@@ -3,7 +3,7 @@ import { CALCULATION_CONSTANTS } from '@/utils/constants'
 
 /**
  * Composable for calculating efficiency gap and generating chart data
- * 
+ *
  * @param {import('vue').Ref<Object>} sliderValues - Reactive object containing slider values
  *   @param {number} sliderValues.value.age - User's age
  *   @param {number} sliderValues.value.equity - Current home equity
