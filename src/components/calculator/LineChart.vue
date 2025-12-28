@@ -208,6 +208,23 @@ const chartOptions = computed(() => {
     duration: 0 // Disable initial animation for faster render
   }
 
+  // Improve legend positioning for mobile - use reactive check
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640
+  if (isMobile) {
+    options.plugins.legend.position = 'bottom'
+    options.plugins.legend.labels.padding = 10
+    options.plugins.legend.labels.boxWidth = 10
+    options.plugins.legend.labels.boxHeight = 10
+  } else {
+    options.plugins.legend.position = 'top'
+    options.plugins.legend.labels.padding = 20
+    options.plugins.legend.labels.boxWidth = 12
+    options.plugins.legend.labels.boxHeight = 12
+  }
+  
+  // Use circle point style for cleaner look
+  options.plugins.legend.labels.usePointStyle = true
+
   // Ensure gradient renders on initial load by using onAfterLayout
   // This ensures chartArea is available and triggers a redraw
   options.onAfterLayout = (chart) => {

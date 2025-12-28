@@ -257,6 +257,7 @@ const handleMouseUp = () => {
   outline: none;
   transition: background var(--duration-normal) var(--ease-in-out);
   cursor: pointer;
+  touch-action: none; /* Prevent page scroll while dragging on touch devices */
   background: var(--slider-background, linear-gradient(
     to right,
     #00d4ff 0%,
@@ -319,12 +320,12 @@ const handleMouseUp = () => {
   background: #0a0e14;
 }
 
-/* Touch target optimization */
+/* Touch target optimization - larger thumb on mobile */
 @media (max-width: 768px) {
   .slider-input::-webkit-slider-thumb,
   .slider-input::-moz-range-thumb {
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
   }
 }
 

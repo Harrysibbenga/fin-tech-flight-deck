@@ -50,7 +50,7 @@
 
       <!-- Lead Gate -->
       <section class="lead-section">
-        <LeadGate />
+        <LeadGate :slider-values="sliderValues" :results="results" />
       </section>
     </main>
 
