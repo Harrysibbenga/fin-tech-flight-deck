@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { DEBOUNCE_DELAY } from '@/utils/constants'
 
 const props = defineProps({
