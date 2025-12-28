@@ -60,26 +60,31 @@ export function useCalculations(sliderValues) {
   }
 
   /**
-   * Calculate the efficiency gap (years gained)
-   * Years gained = how many extra years baseline would need to reach optimized final value
-   * Uses logarithmic calculation based on compound growth
-   * @param {number} baselineFinal - Final value with baseline strategy
-   * @param {number} optimizedFinal - Final value with optimized strategy
-   * @param {number} monthlySavings - Monthly savings amount (used for validation)
+   * Calculate years gained - how many years earlier you reach your goal with optimization
+   * Uses a more realistic approach based on when optimized reaches baseline's final value
+   * @param {Array<number>} baselineTrajectory - Baseline growth trajectory array
+   * @param {Array<number>} optimizedTrajectory - Optimized growth trajectory array
    * @returns {number} Years gained by optimizing
    */
-  const calculateYearsGained = (baselineFinal, optimizedFinal, monthlySavings) => {
-    if (baselineFinal <= 0 || optimizedFinal <= baselineFinal) {
-      return 0.5 // Minimum meaningful value
+  const calculateYearsGained = (baselineTrajectory, optimizedTrajectory) => {
+    const baselineFinal = baselineTrajectory[baselineTrajectory.length - 1]
+    
+    // Find which year the optimized trajectory first exceeds baseline's final value
+    let yearsToReachBaseline = optimizedTrajectory.length - 1 // Default to full period
+    
+    for (let year = 0; year < optimizedTrajectory.length; year++) {
+      if (optimizedTrajectory[year] >= baselineFinal) {
+        yearsToReachBaseline = year
+        break
+      }
     }
-
-    // Calculate how many extra years baseline would need at its growth rate
-    // Formula: years = log(optimizedFinal / baselineFinal) / log(1 + growthRate)
-    const yearsGained = Math.log(optimizedFinal / baselineFinal) / Math.log(1 + CALCULATION_CONSTANTS.BASELINE_ANNUAL_RETURN)
-
-    // Cap at 15 years maximum for realistic display
-    // Minimum 0.5 years to always show meaningful value
-    return Math.max(0.5, Math.min(15, yearsGained))
+    
+    // Years gained = total years - years needed with optimization
+    const totalYears = baselineTrajectory.length - 1
+    const yearsGained = totalYears - yearsToReachBaseline
+    
+    // Return with bounds: minimum 0.5, maximum 12 (more realistic cap)
+    return Math.min(12, Math.max(0.5, yearsGained))
   }
 
   /**
@@ -98,8 +103,8 @@ export function useCalculations(sliderValues) {
       const baselineFinal = baselineTrajectory[baselineTrajectory.length - 1]
       const optimizedFinal = optimizedTrajectory[optimizedTrajectory.length - 1]
 
-      // Calculate metrics
-      const yearsGained = calculateYearsGained(baselineFinal, optimizedFinal, monthlySavings)
+      // Use the new trajectory-based calculation
+      const yearsGained = calculateYearsGained(baselineTrajectory, optimizedTrajectory)
 
       const valueDifference = optimizedFinal - baselineFinal
       const percentageGain = baselineFinal > 0
@@ -107,11 +112,11 @@ export function useCalculations(sliderValues) {
         : 0
 
       return {
-        baselineValue: baselineFinal,
-        optimizedValue: optimizedFinal,
+        baselineValue: Math.round(baselineFinal),
+        optimizedValue: Math.round(optimizedFinal),
         yearsGained: parseFloat(yearsGained.toFixed(1)),
         percentageGain: parseFloat(percentageGain.toFixed(2)),
-        valueDifference: parseFloat(valueDifference.toFixed(2))
+        valueDifference: Math.round(valueDifference)
       }
     } catch (error) {
       // Error boundary: return safe default values
