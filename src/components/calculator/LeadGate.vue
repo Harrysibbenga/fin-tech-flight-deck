@@ -111,11 +111,9 @@ const handleSubmit = async () => {
     // TODO: Send email to backend/API
     // For now, simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
-    console.log('Email submitted:', email.value)
     submitted.value = true
   } catch (error) {
     emailError.value = 'Something went wrong. Please try again.'
-    console.error('Submission error:', error)
   } finally {
     isSubmitting.value = false
   }
@@ -213,7 +211,6 @@ const downloadPDF = () => {
     // Download
     doc.save('wealth-optimization-blueprint.pdf')
   } catch (error) {
-    console.error('PDF generation error:', error)
     alert('Error generating PDF. Please try again.')
   }
 }

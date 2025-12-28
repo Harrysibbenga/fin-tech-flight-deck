@@ -86,31 +86,42 @@ export function useCalculations(sliderValues) {
    * Main calculation results
    */
   const results = computed(() => {
-    const { age, equity, cash, monthlySavings } = sliderValues.value
-    const years = CALCULATION_CONSTANTS.YEARS_PROJECTION
+    try {
+      const { age, equity, cash, monthlySavings } = sliderValues.value
+      const years = CALCULATION_CONSTANTS.YEARS_PROJECTION
 
-    // Always calculate both trajectories
-    const baselineTrajectory = calculateBaselineTrajectory(equity, cash, monthlySavings, years)
-    const optimizedTrajectory = calculateOptimizedTrajectory(equity, cash, monthlySavings, years)
+      // Always calculate both trajectories
+      const baselineTrajectory = calculateBaselineTrajectory(equity, cash, monthlySavings, years)
+      const optimizedTrajectory = calculateOptimizedTrajectory(equity, cash, monthlySavings, years)
 
-    // Get final values
-    const baselineFinal = baselineTrajectory[baselineTrajectory.length - 1]
-    const optimizedFinal = optimizedTrajectory[optimizedTrajectory.length - 1]
+      // Get final values
+      const baselineFinal = baselineTrajectory[baselineTrajectory.length - 1]
+      const optimizedFinal = optimizedTrajectory[optimizedTrajectory.length - 1]
 
-    // Calculate metrics
-    const yearsGained = calculateYearsGained(baselineFinal, optimizedFinal, monthlySavings)
+      // Calculate metrics
+      const yearsGained = calculateYearsGained(baselineFinal, optimizedFinal, monthlySavings)
 
-    const valueDifference = optimizedFinal - baselineFinal
-    const percentageGain = baselineFinal > 0
-      ? ((optimizedFinal - baselineFinal) / baselineFinal) * 100
-      : 0
+      const valueDifference = optimizedFinal - baselineFinal
+      const percentageGain = baselineFinal > 0
+        ? ((optimizedFinal - baselineFinal) / baselineFinal) * 100
+        : 0
 
-    return {
-      baselineValue: baselineFinal,
-      optimizedValue: optimizedFinal,
-      yearsGained: parseFloat(yearsGained.toFixed(1)),
-      percentageGain: parseFloat(percentageGain.toFixed(2)),
-      valueDifference: parseFloat(valueDifference.toFixed(2))
+      return {
+        baselineValue: baselineFinal,
+        optimizedValue: optimizedFinal,
+        yearsGained: parseFloat(yearsGained.toFixed(1)),
+        percentageGain: parseFloat(percentageGain.toFixed(2)),
+        valueDifference: parseFloat(valueDifference.toFixed(2))
+      }
+    } catch (error) {
+      // Error boundary: return safe default values
+      return {
+        baselineValue: 0,
+        optimizedValue: 0,
+        yearsGained: 0.5,
+        percentageGain: 0,
+        valueDifference: 0
+      }
     }
   })
 
@@ -118,23 +129,34 @@ export function useCalculations(sliderValues) {
    * Chart data for visualization
    */
   const chartData = computed(() => {
-    const { equity, cash, monthlySavings } = sliderValues.value
-    const years = CALCULATION_CONSTANTS.YEARS_PROJECTION
+    try {
+      const { equity, cash, monthlySavings } = sliderValues.value
+      const years = CALCULATION_CONSTANTS.YEARS_PROJECTION
 
-    // Always calculate both trajectories
-    const baselineTrajectory = calculateBaselineTrajectory(equity, cash, monthlySavings, years)
-    const optimizedTrajectory = calculateOptimizedTrajectory(equity, cash, monthlySavings, years)
+      // Always calculate both trajectories
+      const baselineTrajectory = calculateBaselineTrajectory(equity, cash, monthlySavings, years)
+      const optimizedTrajectory = calculateOptimizedTrajectory(equity, cash, monthlySavings, years)
 
-    // Calculate difference for difference view
-    const differenceTrajectory = optimizedTrajectory.map((opt, index) => {
-      return opt - baselineTrajectory[index]
-    })
+      // Calculate difference for difference view
+      const differenceTrajectory = optimizedTrajectory.map((opt, index) => {
+        return opt - baselineTrajectory[index]
+      })
 
-    return {
-      baseline: baselineTrajectory,
-      optimized: optimizedTrajectory,
-      difference: differenceTrajectory,
-      labels: Array.from({ length: years + 1 }, (_, i) => `Year ${i + 1}`)
+      return {
+        baseline: baselineTrajectory,
+        optimized: optimizedTrajectory,
+        difference: differenceTrajectory,
+        labels: Array.from({ length: years + 1 }, (_, i) => `Year ${i + 1}`)
+      }
+    } catch (error) {
+      // Error boundary: return empty arrays to prevent chart errors
+      const emptyArray = Array.from({ length: CALCULATION_CONSTANTS.YEARS_PROJECTION + 1 }, () => 0)
+      return {
+        baseline: emptyArray,
+        optimized: emptyArray,
+        difference: emptyArray,
+        labels: Array.from({ length: CALCULATION_CONSTANTS.YEARS_PROJECTION + 1 }, (_, i) => `Year ${i + 1}`)
+      }
     }
   })
 

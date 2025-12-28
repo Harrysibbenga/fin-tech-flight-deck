@@ -37,5 +37,14 @@ defineEmits(['click'])
 .btn-full {
   width: 100%;
 }
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent-primary, #00d4ff);
+  outline-offset: 2px;
+}
+
+.btn:disabled:focus-visible {
+  outline: none;
+}
 </style>
 
