@@ -2,10 +2,18 @@ import { computed } from 'vue'
 import { CALCULATION_CONSTANTS } from '@/utils/constants'
 
 /**
- * Calculate efficiency gap and generate chart data
- * @param {Ref<Object>} sliderValues - Reactive object containing slider values
- * @param {Ref<boolean>} isOptimized - Reactive boolean for optimization state
+ * Composable for calculating efficiency gap and generating chart data
+ * 
+ * @param {import('vue').Ref<Object>} sliderValues - Reactive object containing slider values
+ *   @param {number} sliderValues.value.age - User's age
+ *   @param {number} sliderValues.value.equity - Current home equity
+ *   @param {number} sliderValues.value.cash - Available cash
+ *   @param {number} sliderValues.value.monthlySavings - Monthly savings amount
+ *   @param {number} sliderValues.value.investmentInterest - Investment property interest (0-100)
+ * @param {import('vue').Ref<boolean>} isOptimized - Reactive boolean for optimization state
  * @returns {Object} Calculation results and chart data
+ *   @returns {import('vue').ComputedRef<Object>} results - Computed calculation results
+ *   @returns {import('vue').ComputedRef<Object>} chartData - Computed chart data
  */
 export function useCalculations(sliderValues, isOptimized) {
   /**
