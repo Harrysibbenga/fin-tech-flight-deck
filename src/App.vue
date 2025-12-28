@@ -6,7 +6,45 @@
     </header>
 
     <main class="app-main">
-      <!-- Placeholder for components -->
+      <!-- Sliders Section -->
+      <section class="sliders-section">
+        <h2>Your Current Situation</h2>
+        <SliderInput
+          v-for="slider in sliderConfigs"
+          :key="slider.id"
+          :id="slider.id"
+          :label="slider.label"
+          :min="slider.min"
+          :max="slider.max"
+          :step="slider.step"
+          v-model="sliderValues[slider.id]"
+          :format-fn="slider.format"
+        />
+      </section>
+
+      <!-- Results Section -->
+      <section class="results-section">
+        <OdometerDisplay :value="results.yearsGained" />
+
+        <div class="chart-wrapper">
+          <LineChart
+            :baseline-data="chartData.baseline"
+            :optimized-data="chartData.optimized"
+            :labels="chartData.labels"
+            :height="400"
+          />
+        </div>
+
+        <OptimizationToggle
+          v-model="isOptimized"
+          :years-gained="results.yearsGained"
+        />
+      </section>
+
+      <!-- Lead Gate -->
+      <section class="lead-section">
+        <LeadGate />
+      </section>
     </main>
 
     <footer class="app-footer">
@@ -16,7 +54,26 @@
 </template>
 
 <script setup>
-// App setup - will be populated as components are built
+import { ref, computed } from 'vue'
+import SliderInput from './components/calculator/SliderInput.vue'
+import OdometerDisplay from './components/calculator/OdometerDisplay.vue'
+import LineChart from './components/calculator/LineChart.vue'
+import OptimizationToggle from './components/calculator/OptimizationToggle.vue'
+import LeadGate from './components/calculator/LeadGate.vue'
+import { SLIDER_CONFIGS, getDefaultSliderValues } from './config/sliders.config'
+import { useCalculations } from './composables/useCalculations'
+
+// Slider configurations
+const sliderConfigs = SLIDER_CONFIGS
+
+// Initialize slider values with defaults
+const sliderValues = ref(getDefaultSliderValues())
+
+// Optimization toggle state
+const isOptimized = ref(false)
+
+// Use calculations composable
+const { results, chartData } = useCalculations(sliderValues, isOptimized)
 </script>
 
 <style scoped>
@@ -61,6 +118,21 @@
   margin-top: var(--spacing-12);
 }
 
+section {
+  margin-bottom: var(--spacing-12);
+}
+
+section h2 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--spacing-6);
+  color: var(--text-primary);
+}
+
+.chart-wrapper {
+  margin-bottom: var(--spacing-8);
+}
+
 @media (max-width: 768px) {
   .app-container {
     padding: var(--spacing-4);
@@ -68,6 +140,10 @@
 
   .app-header h1 {
     font-size: var(--text-2xl);
+  }
+
+  .chart-wrapper {
+    margin-bottom: var(--spacing-6);
   }
 }
 </style>
