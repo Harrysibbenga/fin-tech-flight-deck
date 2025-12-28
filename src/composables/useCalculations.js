@@ -15,7 +15,7 @@ import { CALCULATION_CONSTANTS } from '@/utils/constants'
  *   @returns {import('vue').ComputedRef<Object>} chartData - Computed chart data
  */
 export function useCalculations(sliderValues) {
-  
+
   /**
    * Calculate baseline trajectory - standard savings/investment approach
    * Assumes: Keep equity in home, invest cash at conservative rate
@@ -29,20 +29,20 @@ export function useCalculations(sliderValues) {
     const trajectory = []
     const annualSavings = monthlySavings * 12
     const rate = CALCULATION_CONSTANTS.BASELINE_ANNUAL_RETURN
-    
+
     // Start with just cash (equity stays locked in home)
     let investableAssets = cash
-    
+
     for (let year = 0; year <= years; year++) {
       // Total wealth = home equity (grows slowly) + investable assets
       const homeEquityValue = equity * Math.pow(1.03, year) // 3% home appreciation
       const totalWealth = homeEquityValue + investableAssets
       trajectory.push(Math.round(totalWealth))
-      
+
       // Investable assets grow and receive new savings
       investableAssets = investableAssets * (1 + rate) + annualSavings
     }
-    
+
     return trajectory
   }
 
@@ -59,22 +59,22 @@ export function useCalculations(sliderValues) {
     const trajectory = []
     const annualSavings = monthlySavings * 12
     const rate = CALCULATION_CONSTANTS.OPTIMIZED_ANNUAL_RETURN
-    
+
     // Release 50% of equity to invest (realistic LTV)
     const releasedEquity = equity * 0.5
     const remainingEquity = equity * 0.5
     let investableAssets = cash + releasedEquity
-    
+
     for (let year = 0; year <= years; year++) {
       // Remaining home equity still appreciates
       const homeEquityValue = remainingEquity * Math.pow(1.03, year)
       const totalWealth = homeEquityValue + investableAssets
       trajectory.push(Math.round(totalWealth))
-      
+
       // Investable assets grow at optimized rate
       investableAssets = investableAssets * (1 + rate) + annualSavings
     }
-    
+
     return trajectory
   }
 
@@ -86,7 +86,7 @@ export function useCalculations(sliderValues) {
    */
   const calculateYearsGained = (baselineTrajectory, optimizedTrajectory) => {
     const baselineFinal = baselineTrajectory[baselineTrajectory.length - 1]
-    
+
     // Find when optimized first exceeds baseline's final value
     for (let year = 0; year < optimizedTrajectory.length; year++) {
       if (optimizedTrajectory[year] >= baselineFinal) {
@@ -95,7 +95,7 @@ export function useCalculations(sliderValues) {
         return Math.min(10, Math.max(0.5, yearsGained))
       }
     }
-    
+
     return 0.5 // Minimum if optimized never catches up (shouldn't happen)
   }
 
@@ -148,7 +148,7 @@ export function useCalculations(sliderValues) {
 
       const baselineTrajectory = calculateBaselineTrajectory(equity, cash, monthlySavings, years)
       const optimizedTrajectory = calculateOptimizedTrajectory(equity, cash, monthlySavings, years)
-      
+
       const differenceTrajectory = optimizedTrajectory.map((opt, index) => {
         return Math.max(0, opt - baselineTrajectory[index])
       })

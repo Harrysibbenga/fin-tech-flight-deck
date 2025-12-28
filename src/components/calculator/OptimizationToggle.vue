@@ -1,6 +1,6 @@
 <template>
   <div class="optimization-section">
-    <div class="toggle-container" @click.prevent="toggleView($event)" style="scroll-behavior: auto;">
+    <div class="toggle-container" @click.prevent.stop="toggleView($event)">
       <div class="toggle-header">
         <h3>Compare Strategies</h3>
         <p>{{ viewMode === 'side-by-side' ? 'Viewing both trajectories together' : 'Showing the difference between strategies' }}</p>
@@ -66,11 +66,21 @@ const viewMode = computed({
 })
 
 const toggleView = (event) => {
+  // Prevent any default behavior that might cause scroll
   if (event) {
     event.preventDefault()
     event.stopPropagation()
   }
+  
+  // Store current scroll position
+  const scrollY = window.scrollY
+  
   viewMode.value = viewMode.value === 'side-by-side' ? 'difference' : 'side-by-side'
+  
+  // Restore scroll position after Vue updates DOM
+  requestAnimationFrame(() => {
+    window.scrollTo(0, scrollY)
+  })
 }
 </script>
 
@@ -91,6 +101,7 @@ const toggleView = (event) => {
   cursor: pointer;
   gap: var(--spacing-6);
   scroll-margin: 0;
+  scroll-snap-align: none;
 }
 
 .toggle-container:hover {
@@ -144,6 +155,8 @@ const toggleView = (event) => {
   transition: all var(--duration-normal) var(--ease-in-out);
   overflow: hidden;
   flex-shrink: 0;
+  scroll-margin: 0;
+  scroll-snap-align: none;
 }
 
 .toggle-button.active {
@@ -226,8 +239,7 @@ const toggleView = (event) => {
 }
 
 .toggle-button:focus {
-  scroll-margin: 0;
-  scroll-snap-align: none;
+  scroll-behavior: auto;
 }
 
 /* Reduced motion support */
