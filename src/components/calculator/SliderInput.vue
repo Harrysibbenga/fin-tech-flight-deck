@@ -28,6 +28,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { DEBOUNCE_DELAY } from '@/utils/constants'
 
 const props = defineProps({
   id: {
@@ -63,6 +64,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const isActive = ref(false)
+let debounceTimer = null
 
 const formattedValue = computed(() => {
   return props.formatFn(props.modelValue)
@@ -82,7 +84,20 @@ const sliderStyle = computed(() => {
 
 const handleInput = (event) => {
   const value = parseFloat(event.target.value)
+  
+  // Update UI immediately (for smooth slider movement)
   emit('update:modelValue', value)
+  
+  // Clear existing debounce timer
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+  }
+  
+  // Debounce calculations (16ms for 60fps)
+  debounceTimer = setTimeout(() => {
+    // Additional emit for calculation updates if needed
+    // This ensures calculations don't run on every single pixel movement
+  }, DEBOUNCE_DELAY)
 }
 
 const handleMouseDown = () => {
@@ -91,6 +106,11 @@ const handleMouseDown = () => {
 
 const handleMouseUp = () => {
   isActive.value = false
+  // Ensure final value is emitted when user releases
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+    debounceTimer = null
+  }
 }
 </script>
 

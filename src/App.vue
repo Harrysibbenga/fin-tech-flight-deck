@@ -12,6 +12,7 @@
         <SliderInput
           v-for="slider in sliderConfigs"
           :key="slider.id"
+          v-memo="[sliderValues[slider.id], slider]"
           :id="slider.id"
           :label="slider.label"
           :min="slider.min"
@@ -26,7 +27,7 @@
       <section class="results-section">
         <OdometerDisplay :value="results.yearsGained" />
 
-        <div class="chart-wrapper">
+        <div class="chart-wrapper" v-memo="[chartData.baseline, chartData.optimized, isOptimized]">
           <LineChart
             :baseline-data="chartData.baseline"
             :optimized-data="chartData.optimized"
