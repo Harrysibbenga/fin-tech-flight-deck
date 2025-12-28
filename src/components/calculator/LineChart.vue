@@ -71,36 +71,6 @@ const props = defineProps({
   }
 })
 
-/**
- * Create gradient fill function with chartArea check and fallback
- * More visible gradient: top rgba(0, 212, 255, 0.05), bottom rgba(0, 212, 255, 0.2)
- */
-const createGradientFill = computed(() => {
-  return (context) => {
-    const chart = context.chart
-    const { ctx, chartArea } = chart
-
-    // Fallback solid color if chartArea is not available
-    if (!chartArea) {
-      return 'rgba(0, 212, 255, 0.15)'
-    }
-
-    // Create gradient from top to bottom
-    const gradient = ctx.createLinearGradient(
-      0,
-      chartArea.top,
-      0,
-      chartArea.bottom
-    )
-
-    // More visible gradient with specified opacity values
-    gradient.addColorStop(0, 'rgba(0, 212, 255, 0.05)')
-    gradient.addColorStop(1, 'rgba(0, 212, 255, 0.2)')
-
-    return gradient
-  }
-})
-
 const chartData = computed(() => {
   const labels = props.labels.length > 0
     ? props.labels
@@ -115,13 +85,18 @@ const chartData = computed(() => {
           label: 'Value Difference',
           data: props.differenceData,
           borderColor: '#00ff88',
-          backgroundColor: 'rgba(0, 255, 136, 0.2)',
+          backgroundColor: 'rgba(0, 255, 136, 0.15)',
           borderWidth: 3,
           tension: 0.4,
           pointRadius: 0,
           pointHoverRadius: 6,
-          fill: true,
-          fillColor: '#00ff88'
+          pointHoverBackgroundColor: '#00ff88',
+          pointHoverBorderColor: '#ffffff',
+          pointHoverBorderWidth: 2,
+          fill: {
+            target: 'origin',
+            above: 'rgba(0, 255, 136, 0.12)'
+          }
         }
       ]
     }
@@ -147,17 +122,18 @@ const chartData = computed(() => {
         label: 'Optimized Trajectory',
         data: props.optimizedData,
         borderColor: '#00d4ff',
-        backgroundColor: createGradientFill.value,
+        backgroundColor: 'rgba(0, 212, 255, 0.15)',
         borderWidth: 3,
         tension: 0.4,
         pointRadius: 0,
         pointHoverRadius: 6,
-        fill: true,
-        // Subtle glow effect using shadow properties
-        shadowOffsetX: 0,
-        shadowOffsetY: 0,
-        shadowBlur: 15,
-        shadowColor: 'rgba(0, 212, 255, 0.5)'
+        pointHoverBackgroundColor: '#00d4ff',
+        pointHoverBorderColor: '#ffffff',
+        pointHoverBorderWidth: 2,
+        fill: {
+          target: 'origin',
+          above: 'rgba(0, 212, 255, 0.12)'
+        }
       }
     ]
   }
@@ -225,24 +201,8 @@ const chartOptions = computed(() => {
   // Use circle point style for cleaner look
   options.plugins.legend.labels.usePointStyle = true
 
-  // Ensure gradient renders on initial load by using onAfterLayout
-  // This ensures chartArea is available and triggers a redraw
-  options.onAfterLayout = (chart) => {
-    // Force chart update on first layout to ensure gradient renders with chartArea
-    if (chart && !chartAreaAvailable.value && chart.chartArea) {
-      chartAreaAvailable.value = true
-      // Use requestAnimationFrame to ensure DOM is ready
-      requestAnimationFrame(() => {
-        chart.update('none') // Update without animation
-      })
-    }
-  }
-
   return options
 })
-
-// Track when chartArea becomes available for initial render
-const chartAreaAvailable = ref(false)
 
 // Check if chart data is loading
 const isLoading = computed(() => {
@@ -273,7 +233,7 @@ onUnmounted(() => {
 
 <style scoped>
 .chart-container {
-  background: var(--bg-secondary);
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, rgba(0, 212, 255, 0.02) 100%);
   border: none;
   border-radius: var(--radius-lg);
   padding: var(--spacing-6);
