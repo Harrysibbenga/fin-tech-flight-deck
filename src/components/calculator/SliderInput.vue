@@ -131,7 +131,7 @@ const sliderStyle = computed(() => {
       #00ff88 66%,
       #00ff88 100%
     )`
-    
+
     // Track gradient for webkit browsers (mobile)
     baseStyle['--track-gradient'] = `linear-gradient(to right, #ff4444 0%, #ff9500 50%, #00ff88 100%)`
 

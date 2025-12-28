@@ -1,6 +1,6 @@
 <template>
   <div class="optimization-section">
-    <div class="toggle-container" @click="toggleView">
+    <div class="toggle-container" @click.prevent="toggleView($event)" style="scroll-behavior: auto;">
       <div class="toggle-header">
         <h3>Compare Strategies</h3>
         <p>{{ viewMode === 'side-by-side' ? 'Viewing both trajectories together' : 'Showing the difference between strategies' }}</p>
@@ -14,6 +14,7 @@
           type="button"
           :aria-label="viewMode === 'side-by-side' ? 'Switch to difference view' : 'Switch to side by side view'"
           :aria-pressed="viewMode === 'difference'"
+          @click.prevent.stop="toggleView($event)"
         >
           <span class="toggle-slider"></span>
         </button>
@@ -64,7 +65,11 @@ const viewMode = computed({
   set: (value) => emit('update:modelValue', value)
 })
 
-const toggleView = () => {
+const toggleView = (event) => {
+  if (event) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
   viewMode.value = viewMode.value === 'side-by-side' ? 'difference' : 'side-by-side'
 }
 </script>
@@ -85,6 +90,7 @@ const toggleView = () => {
   transition: all var(--duration-normal) var(--ease-in-out);
   cursor: pointer;
   gap: var(--spacing-6);
+  scroll-margin: 0;
 }
 
 .toggle-container:hover {
@@ -217,6 +223,11 @@ const toggleView = () => {
 .toggle-button:focus-visible {
   outline: 2px solid rgba(255, 255, 255, 0.5);
   outline-offset: 2px;
+}
+
+.toggle-button:focus {
+  scroll-margin: 0;
+  scroll-snap-align: none;
 }
 
 /* Reduced motion support */
