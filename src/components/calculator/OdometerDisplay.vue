@@ -126,7 +126,7 @@ const animateToValue = async (targetValue) => {
   const wholeString = wholePart.toString()
   const targetDigits = wholeString.split('').map(char => parseInt(char, 10))
 
-  // Ensure we have enough digit containers
+  // Ensure we have enough digit containers (support up to 999)
   while (wholeNumberDigits.value.length < targetDigits.length) {
     wholeNumberDigits.value.unshift({
       position: -1,
@@ -136,27 +136,18 @@ const animateToValue = async (targetValue) => {
     })
   }
 
-  // Remove leading zeros if value decreased
+  // If we have more digits than needed, keep only necessary ones
   if (targetDigits.length < wholeNumberDigits.value.length) {
-    wholeNumberDigits.value = wholeNumberDigits.value.slice(-targetDigits.length)
+    const excess = wholeNumberDigits.value.length - targetDigits.length
+    wholeNumberDigits.value = wholeNumberDigits.value.slice(excess)
   }
-
-  // Update target values
-  targetDigits.forEach((target, index) => {
-    const digitIndex = wholeNumberDigits.value.length - targetDigits.length + index
-    if (wholeNumberDigits.value[digitIndex]) {
-      wholeNumberDigits.value[digitIndex].targetValue = target
-    }
-  })
-
-  decimalDigit.value.targetValue = decimalPart
 
   isAnimating.value = true
 
   // Animate all digits simultaneously
   const animationPromises = [
     ...wholeNumberDigits.value.map((digit, index) => {
-      const targetDigit = targetDigits[targetDigits.length - wholeNumberDigits.value.length + index]
+      const targetDigit = targetDigits[index]
       return animateDigit(digit, targetDigit !== undefined ? targetDigit : 0, ANIMATION_DURATION.ODOMETER)
     }),
     animateDigit(decimalDigit.value, decimalPart, ANIMATION_DURATION.ODOMETER)
@@ -168,17 +159,26 @@ const animateToValue = async (targetValue) => {
 
 // Watch for value changes
 watch(() => props.value, (newVal) => {
-  if (newVal !== undefined && !isNaN(newVal)) {
+  if (newVal !== undefined && !isNaN(newVal) && newVal >= 0) {
+    // If digits haven't been initialized yet, initialize first
+    if (wholeNumberDigits.value.length === 0) {
+      initializeDigits(Math.max(0.1, newVal))
+    }
     animateToValue(newVal)
   }
-}, { immediate: false })
+}, { immediate: true })
 
-// Initialize with calculated value on mount
+// Initialize with calculated value on mount (in case watch doesn't fire)
 onMounted(() => {
-  const initialValue = props.value || 0.1
-  initializeDigits(initialValue)
-  if (props.value > 0) {
-    animateToValue(props.value)
+  if (wholeNumberDigits.value.length === 0) {
+    const initialValue = props.value && props.value > 0 ? props.value : 0.1
+    initializeDigits(initialValue)
+    if (props.value > 0) {
+      // Small delay to ensure smooth initial animation
+      setTimeout(() => {
+        animateToValue(props.value)
+      }, 100)
+    }
   }
 })
 </script>
