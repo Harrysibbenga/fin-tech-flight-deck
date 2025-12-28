@@ -79,7 +79,8 @@ export function useCalculations(sliderValues) {
   }
 
   /**
-   * Calculate years gained - how many years earlier you reach your goal with optimization
+   * Calculate years gained - how many extra years baseline would need to reach optimized final value
+   * CORRECTED: With more savings, benefit should be GREATER (more years gained)
    * Handles edge cases like zero monthly savings
    * @param {Array<number>} baselineTrajectory - Baseline growth trajectory array
    * @param {Array<number>} optimizedTrajectory - Optimized growth trajectory array
@@ -87,28 +88,58 @@ export function useCalculations(sliderValues) {
    */
   const calculateYearsGained = (baselineTrajectory, optimizedTrajectory) => {
     const baselineFinal = baselineTrajectory[baselineTrajectory.length - 1]
-    
+    const optimizedFinal = optimizedTrajectory[optimizedTrajectory.length - 1]
+
     // Validate inputs
     if (!baselineFinal || !isFinite(baselineFinal) || baselineFinal <= 0) {
       return 0.5 // Default minimum for invalid baseline
     }
-
-    // Find which year the optimized trajectory first exceeds baseline's final value
-    let yearsToReachBaseline = optimizedTrajectory.length - 1 // Default to full period
     
-    for (let year = 0; year < optimizedTrajectory.length; year++) {
-      if (optimizedTrajectory[year] >= baselineFinal) {
-        yearsToReachBaseline = year
+    if (!optimizedFinal || !isFinite(optimizedFinal) || optimizedFinal <= baselineFinal) {
+      return 0.5 // Default minimum if optimized doesn't outperform
+    }
+
+    // CORRECTED APPROACH: Calculate how many extra years baseline needs to reach optimized's final value
+    // Years gained = when baseline reaches optimized's final - when optimized reached it (30 years)
+    // With MORE savings: optimized final is higher, baseline needs more years beyond 30 = MORE years gained
+    // With LESS savings: optimized final is lower, baseline reaches it sooner (maybe within 30) = FEWER years gained
+    
+    const totalYears = baselineTrajectory.length - 1
+    
+    // Find which year baseline reaches optimized's final value
+    let baselineYearToReachOptimized = null
+    for (let year = 0; year < baselineTrajectory.length; year++) {
+      if (baselineTrajectory[year] >= optimizedFinal) {
+        baselineYearToReachOptimized = year
         break
       }
     }
     
-    // Years gained = total years - years needed with optimization
-    const totalYears = baselineTrajectory.length - 1
-    const yearsGained = totalYears - yearsToReachBaseline
+    let yearsGained
+    
+    if (baselineYearToReachOptimized === null) {
+      // Baseline never reaches optimized final within projection period
+      // Use logarithmic calculation: how many years at baseline rate to grow from baselineFinal to optimizedFinal
+      const ratio = optimizedFinal / baselineFinal
+      const baselineRate = CALCULATION_CONSTANTS.BASELINE_ANNUAL_RETURN
+      // This gives total years needed from start; subtract what we've already projected (30 years)
+      const totalYearsNeeded = Math.log(ratio) / Math.log(1 + baselineRate)
+      yearsGained = Math.max(0, totalYearsNeeded - totalYears)
+    } else if (baselineYearToReachOptimized > totalYears) {
+      // Baseline reaches it after year 30
+      yearsGained = baselineYearToReachOptimized - totalYears
+    } else {
+      // Baseline reaches it before or at year 30 - this means smaller benefit
+      // Optimized reached its final at year 30, baseline reached that value at earlier year
+      // So years gained = 30 - earlier year (optimized got there this many years later, which is the benefit)
+      // Actually, if baseline reaches it earlier, that's LESS benefit, so we want a smaller number
+      // Scale down proportionally: if baseline reaches at year 25, benefit is 5/30 = ~1.7 years
+      const earlierRatio = baselineYearToReachOptimized / totalYears
+      yearsGained = totalYears * (1 - earlierRatio) * 0.5 // Scale down to reflect smaller benefit
+    }
     
     // Handle edge cases
-    if (!isFinite(yearsGained) || isNaN(yearsGained)) {
+    if (!isFinite(yearsGained) || isNaN(yearsGained) || yearsGained < 0) {
       return 0.5 // Default minimum
     }
     
