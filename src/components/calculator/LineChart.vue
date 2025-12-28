@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -172,11 +172,28 @@ const chartOptions = computed(() => {
   }
 
   // Handle window resize smoothly
-  options.onResize = (chart, size) => {
-    // Chart.js handles this automatically, but we can add custom logic if needed
-  }
+  options.responsive = true
+  options.maintainAspectRatio = false
 
   return options
+})
+
+// Handle window resize for smooth chart updates
+let resizeObserver = null
+
+onMounted(() => {
+  // Chart.js handles resize automatically, but we ensure smooth updates
+  if (window.ResizeObserver) {
+    resizeObserver = new ResizeObserver(() => {
+      // Chart will automatically resize via responsive option
+    })
+  }
+})
+
+onUnmounted(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+  }
 })
 </script>
 

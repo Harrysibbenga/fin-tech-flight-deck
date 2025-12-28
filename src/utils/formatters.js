@@ -15,7 +15,7 @@ export function formatCurrency(value, currency = 'GBP', decimals = 0) {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals
   })
-  
+
   return currency === 'GBP' ? `£${formatted}` : `$${formatted}`
 }
 

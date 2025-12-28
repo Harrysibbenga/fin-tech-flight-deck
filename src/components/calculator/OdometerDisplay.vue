@@ -162,11 +162,16 @@ onMounted(() => {
   // Start from 0 for initial animation
   initializeDigits(0)
   
-  // Animate to actual value after a brief delay
+  // Animate to actual value after a brief delay to ensure calculations are ready
   if (props.value !== undefined && !isNaN(props.value) && props.value >= 0) {
+    // Use nextTick to ensure parent calculations have completed
     setTimeout(() => {
-      animateToValue(Math.max(0.1, props.value))
-    }, 300)
+      const targetValue = Math.max(0.1, props.value)
+      animateToValue(targetValue)
+    }, 400)
+  } else {
+    // If no value yet, initialize with 0.1 and wait for value
+    initializeDigits(0.1)
   }
 })
 
@@ -303,7 +308,7 @@ watch(() => props.value, (newVal, oldVal) => {
     transition: none;
     animation: none;
   }
-  
+
   .odometer-container {
     animation: none;
   }

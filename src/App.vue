@@ -187,7 +187,7 @@ section:focus-within {
   .app-container {
     transition: none;
   }
-  
+
   .chart-fade-enter-active,
   .chart-fade-leave-active {
     transition: none;

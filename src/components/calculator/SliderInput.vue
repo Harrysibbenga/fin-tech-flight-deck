@@ -5,6 +5,7 @@
     </label>
     <div
       class="slider-value"
+      :class="{ 'value-updated': valueUpdated }"
       :id="`${id}-value`"
       :style="{ color: sliderValueColor }"
     >
@@ -77,10 +78,19 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const isActive = ref(false)
+const valueUpdated = ref(false)
 let debounceTimer = null
 
 const formattedValue = computed(() => {
-  return props.formatFn(props.modelValue)
+  const value = props.formatFn(props.modelValue)
+  // Trigger pulse animation on value change
+  nextTick(() => {
+    valueUpdated.value = true
+    setTimeout(() => {
+      valueUpdated.value = false
+    }, 500)
+  })
+  return value
 })
 
 const sliderPercentage = computed(() => {
@@ -214,9 +224,13 @@ const handleMouseUp = () => {
   display: block;
   font-variant-numeric: tabular-nums;
   min-height: 2.5rem;
+  min-width: 120px;
   display: flex;
   align-items: center;
   transition: color var(--duration-normal) var(--ease-in-out);
+}
+
+.slider-value.value-updated {
   animation: colorPulse 0.5s ease-out;
 }
 
@@ -328,16 +342,16 @@ const handleMouseUp = () => {
     animation: none;
     transition: none;
   }
-  
+
   .slider-input {
     transition: none;
   }
-  
+
   .slider-input::-webkit-slider-thumb,
   .slider-input::-moz-range-thumb {
     transition: none;
   }
-  
+
   .slider-container {
     transition: none;
   }
