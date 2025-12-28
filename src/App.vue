@@ -29,6 +29,12 @@
       <section class="results-section">
         <OdometerDisplay :value="results.yearsGained" />
 
+        <MetricsCards
+          :optimized-value="results.optimizedValue"
+          :value-difference="results.valueDifference"
+          :percentage-gain="results.percentageGain"
+        />
+
         <transition name="chart-fade" mode="out-in">
           <div
             class="chart-wrapper"
@@ -64,6 +70,7 @@
 import { ref, computed, onMounted } from 'vue'
 import SliderInput from './components/calculator/SliderInput.vue'
 import OdometerDisplay from './components/calculator/OdometerDisplay.vue'
+import MetricsCards from './components/calculator/MetricsCards.vue'
 import LineChart from './components/calculator/LineChart.vue'
 import OptimizationToggle from './components/calculator/OptimizationToggle.vue'
 import LeadGate from './components/calculator/LeadGate.vue'
