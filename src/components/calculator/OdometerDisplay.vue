@@ -9,7 +9,7 @@
         class="odometer-digit-container"
         :style="{ '--digit-value': digit.currentValue }"
       >
-        <div class="odometer-digit-inner">
+        <div class="odometer-digit-inner" :class="{ 'value-updated': digitUpdated }">
           {{ digit.displayValue }}
         </div>
       </div>
@@ -45,6 +45,7 @@ const props = defineProps({
 })
 
 const isAnimating = ref(false)
+const digitUpdated = ref(false)
 
 // Digit state for each position
 const wholeNumberDigits = ref([])
@@ -246,6 +247,9 @@ watch(() => props.value, (newVal, oldVal) => {
   height: 100%;
   transition: transform var(--duration-fast) var(--ease-in-out),
               color var(--duration-normal) var(--ease-in-out);
+}
+
+.odometer-digit-inner.value-updated {
   animation: colorPulse 0.5s ease-out;
 }
 
