@@ -142,7 +142,7 @@ const downloadPDF = () => {
 
     // Current Situation
     doc.setFontSize(16)
-    doc.setTextColor(255, 255, 255)
+    doc.setTextColor(0, 212, 255) // Use cyan color instead of white for visibility
     doc.text('Your Current Situation', margin, yPosition)
     yPosition += 10
 

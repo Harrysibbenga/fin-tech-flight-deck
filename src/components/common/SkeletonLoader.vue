@@ -1,7 +1,7 @@
 <template>
   <div :class="['skeleton-loader', className]" :style="style">
     <div
-      v-for="(line, index) in lines"
+      v-for="(line, index) in linesArray"
       :key="index"
       :class="['skeleton-line', { 'skeleton-line-short': line.short }]"
     ></div>
@@ -9,9 +9,11 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   lines: {
-    type: Number,
+    type: [Number, Array],
     default: 1
   },
   className: {
@@ -22,6 +24,21 @@ defineProps({
     type: Object,
     default: () => ({})
   }
+})
+
+// Convert lines prop to array format
+// If number, create array of simple objects
+// If array, use it directly (expecting [{ short: boolean }])
+const linesArray = computed(() => {
+  if (typeof props.lines === 'number') {
+    return Array.from({ length: props.lines }, () => ({ short: false }))
+  }
+  // If array, ensure each item has short property
+  return props.lines.map(line => 
+    typeof line === 'object' && line !== null 
+      ? { short: line.short || false }
+      : { short: false }
+  )
 })
 </script>
 
