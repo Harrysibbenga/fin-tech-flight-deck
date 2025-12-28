@@ -138,11 +138,16 @@ const chartData = computed(() => {
 const chartOptions = computed(() => {
   const options = JSON.parse(JSON.stringify(CHART_OPTIONS)) // Deep clone
 
-  // Update Y-axis formatting
+  // Update Y-axis formatting with consistent formatting
   options.scales.y.ticks.callback = (value) => {
-    return `£${(value / 1000).toFixed(0)}k`
+    const thousands = Math.round(value / 1000)
+    return `£${thousands.toLocaleString('en-GB')}k`
   }
   options.scales.y.ticks.color = '#8b92a8'
+  options.scales.y.ticks.font = {
+    ...options.scales.y.ticks.font,
+    variantNumeric: 'tabular-nums'
+  }
 
   // Update X-axis to show only Year 5, 10, 15, 20, 25, 30
   if (options.scales.x && options.scales.x.ticks) {
@@ -166,6 +171,11 @@ const chartOptions = computed(() => {
     options.scales.y.beginAtZero = true
   }
 
+  // Handle window resize smoothly
+  options.onResize = (chart, size) => {
+    // Chart.js handles this automatically, but we can add custom logic if needed
+  }
+
   return options
 })
 </script>
@@ -178,6 +188,14 @@ const chartOptions = computed(() => {
   padding: var(--spacing-6);
   margin-bottom: var(--spacing-8);
   outline: none;
+  position: relative;
+  /* Prevent layout shift */
+  min-height: 400px;
+}
+
+.chart-container:focus-within {
+  outline: 2px solid rgba(0, 212, 255, 0.3);
+  outline-offset: 2px;
 }
 
 @media (max-width: 768px) {

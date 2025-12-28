@@ -337,6 +337,31 @@ const shareWhatsApp = () => {
   background: rgba(0, 212, 255, 0.1);
 }
 
+/* Focus styles */
+.email-input:focus-visible {
+  outline: 2px solid #00d4ff;
+  outline-offset: 2px;
+}
+
+.submit-button:focus-visible,
+.action-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .lead-gate,
+  .success-download,
+  .checkmark,
+  .submit-button,
+  .action-button,
+  .email-input {
+    transition: none;
+    animation: none;
+  }
+}
+
 @media (max-width: 768px) {
   .input-group {
     flex-direction: column;

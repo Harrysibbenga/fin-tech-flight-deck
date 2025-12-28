@@ -213,6 +213,25 @@ const toggleView = () => {
   transform: translateY(10px);
 }
 
+/* Focus styles */
+.toggle-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .toggle-container,
+  .toggle-button,
+  .toggle-slider,
+  .view-info,
+  .view-fade-enter-active,
+  .view-fade-leave-active {
+    transition: none;
+    animation: none;
+  }
+}
+
 @media (max-width: 768px) {
   .toggle-container {
     flex-direction: column;

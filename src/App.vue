@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" :class="{ 'app-loaded': isLoaded }">
     <header class="app-header">
       <h1>Wealth Efficiency Calculator</h1>
       <p>Discover how many years you're losing</p>
@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import SliderInput from './components/calculator/SliderInput.vue'
 import OdometerDisplay from './components/calculator/OdometerDisplay.vue'
 import LineChart from './components/calculator/LineChart.vue'
@@ -79,8 +79,20 @@ const sliderValues = ref(getDefaultSliderValues())
 // View mode state: 'side-by-side' or 'difference'
 const viewMode = ref('side-by-side')
 
+// Page load state for fade-in animation
+const isLoaded = ref(false)
+
 // Use calculations composable (always calculates both trajectories)
 const { results, chartData } = useCalculations(sliderValues)
+
+// Trigger fade-in animation on mount
+onMounted(() => {
+  // Calculations run immediately via computed properties
+  // Trigger fade-in animation
+  setTimeout(() => {
+    isLoaded.value = true
+  }, 10)
+})
 </script>
 
 <style scoped>
@@ -89,6 +101,12 @@ const { results, chartData } = useCalculations(sliderValues)
   background: linear-gradient(180deg, #0a0e14 0%, #121820 100%);
   color: var(--text-primary);
   padding: var(--spacing-8);
+  opacity: 0;
+  transition: opacity 400ms ease-out;
+}
+
+.app-container.app-loaded {
+  opacity: 1;
 }
 
 .app-header {
@@ -155,6 +173,25 @@ section h2 {
 .chart-fade-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+/* Focus styles for accessibility */
+section:focus-within {
+  outline: 2px solid rgba(0, 212, 255, 0.2);
+  outline-offset: 4px;
+  border-radius: var(--radius-md);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .app-container {
+    transition: none;
+  }
+  
+  .chart-fade-enter-active,
+  .chart-fade-leave-active {
+    transition: none;
+  }
 }
 
 @media (max-width: 768px) {

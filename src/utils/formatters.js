@@ -1,5 +1,5 @@
 /**
- * Format a number as currency
+ * Format a number as currency with consistent formatting
  * @param {number} value - The number to format
  * @param {string} currency - Currency code (default: 'GBP')
  * @param {number} decimals - Number of decimal places (default: 0)
@@ -10,16 +10,17 @@ export function formatCurrency(value, currency = 'GBP', decimals = 0) {
     return currency === 'GBP' ? '£0' : '$0'
   }
 
-  return new Intl.NumberFormat('en-GB', {
-    style: 'currency',
-    currency,
+  // Use toLocaleString for consistent formatting
+  const formatted = value.toLocaleString('en-GB', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals
-  }).format(value)
+  })
+  
+  return currency === 'GBP' ? `£${formatted}` : `$${formatted}`
 }
 
 /**
- * Format a number with thousand separators
+ * Format a number with thousand separators (en-GB format)
  * @param {number} value - The number to format
  * @param {number} decimals - Number of decimal places (default: 0)
  * @returns {string} Formatted number string
@@ -29,10 +30,10 @@ export function formatNumber(value, decimals = 0) {
     return '0'
   }
 
-  return new Intl.NumberFormat('en-GB', {
+  return value.toLocaleString('en-GB', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals
-  }).format(value)
+  })
 }
 
 /**

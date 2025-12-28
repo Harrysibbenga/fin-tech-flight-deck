@@ -157,27 +157,25 @@ const animateToValue = async (targetValue) => {
   isAnimating.value = false
 }
 
-// Watch for value changes
-watch(() => props.value, (newVal) => {
-  if (newVal !== undefined && !isNaN(newVal) && newVal >= 0) {
-    // If digits haven't been initialized yet, initialize first
-    if (wholeNumberDigits.value.length === 0) {
-      initializeDigits(Math.max(0.1, newVal))
-    }
-    animateToValue(newVal)
-  }
-}, { immediate: true })
-
-// Initialize with calculated value on mount (in case watch doesn't fire)
+// Initialize on mount - start at 0 and animate to calculated value
 onMounted(() => {
-  if (wholeNumberDigits.value.length === 0) {
-    const initialValue = props.value && props.value > 0 ? props.value : 0.1
-    initializeDigits(initialValue)
-    if (props.value > 0) {
-      // Small delay to ensure smooth initial animation
-      setTimeout(() => {
-        animateToValue(props.value)
-      }, 100)
+  // Start from 0 for initial animation
+  initializeDigits(0)
+  
+  // Animate to actual value after a brief delay
+  if (props.value !== undefined && !isNaN(props.value) && props.value >= 0) {
+    setTimeout(() => {
+      animateToValue(Math.max(0.1, props.value))
+    }, 300)
+  }
+})
+
+// Watch for value changes after initial load
+watch(() => props.value, (newVal, oldVal) => {
+  if (newVal !== undefined && !isNaN(newVal) && newVal >= 0) {
+    // Only animate if value actually changed (not initial render)
+    if (oldVal !== undefined && newVal !== oldVal) {
+      animateToValue(newVal)
     }
   }
 })
@@ -235,7 +233,18 @@ onMounted(() => {
   justify-content: center;
   width: 100%;
   height: 100%;
-  transition: transform var(--duration-fast) var(--ease-in-out);
+  transition: transform var(--duration-fast) var(--ease-in-out),
+              color var(--duration-normal) var(--ease-in-out);
+  animation: colorPulse 0.5s ease-out;
+}
+
+@keyframes colorPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 /* Flip animation effect */
@@ -292,6 +301,11 @@ onMounted(() => {
 @media (prefers-reduced-motion: reduce) {
   .odometer-digit-inner {
     transition: none;
+    animation: none;
+  }
+  
+  .odometer-container {
+    animation: none;
   }
 }
 </style>

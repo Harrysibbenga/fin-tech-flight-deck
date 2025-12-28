@@ -19,7 +19,7 @@
       :value="modelValue"
       class="slider-input"
       :data-sentiment-mode="sentimentMode"
-      :aria-label="label"
+      :aria-label="`Adjust your ${label}`"
       :aria-valuemin="min"
       :aria-valuemax="max"
       :aria-valuenow="modelValue"
@@ -217,6 +217,16 @@ const handleMouseUp = () => {
   display: flex;
   align-items: center;
   transition: color var(--duration-normal) var(--ease-in-out);
+  animation: colorPulse 0.5s ease-out;
+}
+
+@keyframes colorPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .slider-input {
@@ -304,6 +314,33 @@ const handleMouseUp = () => {
   outline: 2px solid var(--accent-primary);
   outline-offset: 4px;
   border-radius: 6px;
+}
+
+/* Prevent layout shift during updates */
+.slider-value {
+  min-width: 120px;
+  text-align: left;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .slider-value {
+    animation: none;
+    transition: none;
+  }
+  
+  .slider-input {
+    transition: none;
+  }
+  
+  .slider-input::-webkit-slider-thumb,
+  .slider-input::-moz-range-thumb {
+    transition: none;
+  }
+  
+  .slider-container {
+    transition: none;
+  }
 }
 </style>
 
