@@ -185,14 +185,18 @@ const handleMouseUp = () => {
   border-radius: var(--radius-lg);
   padding: var(--spacing-6);
   margin-bottom: var(--spacing-4);
-  transition: all var(--duration-normal) var(--ease-in-out);
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .slider-container:hover {
-  background: var(--bg-tertiary);
+  background: #1a1f2e;
   border-color: rgba(0, 212, 255, 0.3);
   transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+}
+
+.slider-container:focus-within {
+  transform: scale(1.01);
 }
 
 .slider-label {
