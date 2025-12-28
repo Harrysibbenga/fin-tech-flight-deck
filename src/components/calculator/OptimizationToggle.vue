@@ -71,14 +71,14 @@ const toggleView = (event) => {
     event.preventDefault()
     event.stopPropagation()
   }
-  
+
   // Store current scroll position
   const scrollY = window.scrollY
   const scrollX = window.scrollX
-  
+
   // Toggle the view mode
   viewMode.value = viewMode.value === 'side-by-side' ? 'difference' : 'side-by-side'
-  
+
   // Restore scroll position after Vue updates DOM
   // Use nextTick to ensure DOM has updated
   nextTick(() => {
