@@ -79,24 +79,41 @@ export function useCalculations(sliderValues) {
   }
 
   /**
-   * Calculate years gained - when does optimized reach baseline's final value?
+   * Calculate years gained - how many years earlier you reach your goal with optimization
+   * Handles edge cases like zero monthly savings
    * @param {Array<number>} baselineTrajectory - Baseline growth trajectory array
    * @param {Array<number>} optimizedTrajectory - Optimized growth trajectory array
    * @returns {number} Years gained by optimizing
    */
   const calculateYearsGained = (baselineTrajectory, optimizedTrajectory) => {
     const baselineFinal = baselineTrajectory[baselineTrajectory.length - 1]
-
-    // Find when optimized first exceeds baseline's final value
-    for (let year = 0; year < optimizedTrajectory.length; year++) {
-      if (optimizedTrajectory[year] >= baselineFinal) {
-        const yearsGained = (baselineTrajectory.length - 1) - year
-        // Cap between 0.5 and 10 years for realistic display
-        return Math.min(10, Math.max(0.5, yearsGained))
-      }
+    
+    // Validate inputs
+    if (!baselineFinal || !isFinite(baselineFinal) || baselineFinal <= 0) {
+      return 0.5 // Default minimum for invalid baseline
     }
 
-    return 0.5 // Minimum if optimized never catches up (shouldn't happen)
+    // Find which year the optimized trajectory first exceeds baseline's final value
+    let yearsToReachBaseline = optimizedTrajectory.length - 1 // Default to full period
+    
+    for (let year = 0; year < optimizedTrajectory.length; year++) {
+      if (optimizedTrajectory[year] >= baselineFinal) {
+        yearsToReachBaseline = year
+        break
+      }
+    }
+    
+    // Years gained = total years - years needed with optimization
+    const totalYears = baselineTrajectory.length - 1
+    const yearsGained = totalYears - yearsToReachBaseline
+    
+    // Handle edge cases
+    if (!isFinite(yearsGained) || isNaN(yearsGained)) {
+      return 0.5 // Default minimum
+    }
+    
+    // Return with bounds: minimum 0.5, maximum 12 (realistic cap)
+    return Math.min(12, Math.max(0.5, yearsGained))
   }
 
   /**
@@ -120,11 +137,11 @@ export function useCalculations(sliderValues) {
         : 0
 
       return {
-        baselineValue: baselineFinal,
-        optimizedValue: optimizedFinal,
-        yearsGained: parseFloat(yearsGained.toFixed(1)),
-        percentageGain: parseFloat(Math.min(percentageGain, 100).toFixed(1)), // Cap at 100%
-        valueDifference: valueDifference
+        baselineValue: Math.round(baselineFinal),
+        optimizedValue: Math.round(optimizedFinal),
+        yearsGained: parseFloat(yearsGained.toFixed(1)), // Format as X.X (single decimal)
+        percentageGain: parseFloat(percentageGain.toFixed(1)),
+        valueDifference: Math.round(valueDifference)
       }
     } catch (error) {
       // Error boundary: return safe default values
@@ -176,3 +193,4 @@ export function useCalculations(sliderValues) {
     chartData
   }
 }
+
