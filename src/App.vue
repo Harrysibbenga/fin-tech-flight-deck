@@ -65,7 +65,7 @@
   .app-container {
     padding: var(--spacing-4);
   }
-  
+
   .app-header h1 {
     font-size: var(--text-2xl);
   }

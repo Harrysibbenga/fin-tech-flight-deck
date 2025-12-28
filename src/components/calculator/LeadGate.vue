@@ -1,0 +1,324 @@
+<template>
+  <div class="lead-gate" v-if="!submitted">
+    <div class="lead-gate-content">
+      <h3>Download Your Personalized Blueprint</h3>
+      <p>Get a detailed PDF showing your optimized wealth strategy</p>
+
+      <form @submit.prevent="handleSubmit" class="lead-form">
+        <div class="input-group">
+          <input
+            type="email"
+            v-model="email"
+            placeholder="Enter your email"
+            required
+            class="email-input"
+            :aria-label="'Email address'"
+            :aria-invalid="emailError ? 'true' : 'false'"
+            :aria-describedby="emailError ? 'email-error' : undefined"
+          />
+          <button type="submit" class="submit-button" :disabled="isSubmitting">
+            <span v-if="!isSubmitting">Download Blueprint</span>
+            <span v-else>Submitting...</span>
+            <svg
+              v-if="!isSubmitting"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M4 10h12M10 4l6 6-6 6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div v-if="emailError" id="email-error" class="error-message" role="alert">
+          {{ emailError }}
+        </div>
+
+        <p class="privacy-note">
+          We respect your privacy. Unsubscribe anytime.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <div class="success-download" v-else>
+    <div class="success-animation">
+      <div class="checkmark">✓</div>
+    </div>
+    <h3>Blueprint Sent!</h3>
+    <p>Check your email for your personalized wealth optimization blueprint</p>
+    <div class="download-actions">
+      <button class="action-button primary" @click="downloadPDF" type="button">
+        Download PDF
+      </button>
+      <button class="action-button secondary" @click="shareWhatsApp" type="button">
+        Share on WhatsApp
+      </button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { isValidEmail } from '@/utils/validators'
+
+const email = ref('')
+const emailError = ref('')
+const submitted = ref(false)
+const isSubmitting = ref(false)
+
+const handleSubmit = async () => {
+  emailError.value = ''
+
+  if (!email.value.trim()) {
+    emailError.value = 'Email is required'
+    return
+  }
+
+  if (!isValidEmail(email.value)) {
+    emailError.value = 'Please enter a valid email address'
+    return
+  }
+
+  isSubmitting.value = true
+
+  try {
+    // TODO: Send email to backend/API
+    // For now, simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    console.log('Email submitted:', email.value)
+    submitted.value = true
+  } catch (error) {
+    emailError.value = 'Something went wrong. Please try again.'
+    console.error('Submission error:', error)
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+const downloadPDF = () => {
+  // TODO: Generate and download PDF
+  console.log('Downloading PDF...')
+  // Placeholder: Create a simple PDF download
+  const link = document.createElement('a')
+  link.href = '#' // Replace with actual PDF URL
+  link.download = 'wealth-optimization-blueprint.pdf'
+  // link.click() // Uncomment when PDF is ready
+  alert('PDF download will be available once the PDF generation is implemented.')
+}
+
+const shareWhatsApp = () => {
+  const text = encodeURIComponent('Check out my personalized wealth blueprint!')
+  window.open(`https://wa.me/?text=${text}`, '_blank')
+}
+</script>
+
+<style scoped>
+.lead-gate {
+  margin: var(--spacing-12) 0;
+  padding: var(--spacing-8);
+  background: var(--gradient-card);
+  border: 2px solid rgba(0, 212, 255, 0.2);
+  border-radius: var(--radius-xl);
+  text-align: center;
+}
+
+.lead-gate-content h3 {
+  color: var(--text-primary);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--spacing-3);
+}
+
+.lead-gate-content p {
+  color: var(--text-secondary);
+  font-size: var(--text-base);
+  margin-bottom: var(--spacing-6);
+}
+
+.input-group {
+  display: flex;
+  gap: var(--spacing-3);
+  max-width: 600px;
+  margin: 0 auto var(--spacing-3);
+}
+
+.email-input {
+  flex: 1;
+  padding: var(--spacing-4) var(--spacing-6);
+  background: var(--bg-primary);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  transition: all var(--duration-normal) var(--ease-in-out);
+  min-height: 44px;
+}
+
+.email-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.1);
+}
+
+.email-input:invalid:not(:focus):not(:placeholder-shown) {
+  border-color: var(--accent-warning);
+}
+
+.email-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.error-message {
+  color: var(--accent-warning);
+  font-size: var(--text-sm);
+  margin-bottom: var(--spacing-2);
+  min-height: 1.5rem;
+}
+
+.submit-button {
+  padding: var(--spacing-4) var(--spacing-6);
+  background: var(--gradient-accent);
+  border: none;
+  border-radius: var(--radius-full);
+  color: white;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  transition: all var(--duration-normal) var(--ease-in-out);
+  white-space: nowrap;
+  min-height: 44px;
+}
+
+.submit-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 212, 255, 0.4);
+}
+
+.submit-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.privacy-note {
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+}
+
+.success-download {
+  text-align: center;
+  padding: var(--spacing-8);
+}
+
+.success-animation {
+  margin-bottom: var(--spacing-6);
+}
+
+.checkmark {
+  width: 80px;
+  height: 80px;
+  background: var(--accent-success);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bg-primary);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  animation: checkmarkPop 0.6s var(--ease-bounce);
+}
+
+@keyframes checkmarkPop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.success-download h3 {
+  color: var(--text-primary);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--spacing-3);
+}
+
+.success-download p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-6);
+}
+
+.download-actions {
+  display: flex;
+  gap: var(--spacing-4);
+  justify-content: center;
+}
+
+.action-button {
+  padding: var(--spacing-4) var(--spacing-6);
+  border-radius: var(--radius-full);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-in-out);
+  min-height: 44px;
+}
+
+.action-button.primary {
+  background: var(--gradient-accent);
+  border: none;
+  color: white;
+}
+
+.action-button.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 212, 255, 0.4);
+}
+
+.action-button.secondary {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}
+
+.action-button.secondary:hover {
+  border-color: var(--accent-primary);
+  background: rgba(0, 212, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+  .input-group {
+    flex-direction: column;
+  }
+
+  .download-actions {
+    flex-direction: column;
+  }
+
+  .action-button {
+    width: 100%;
+  }
+}
+</style>
+
