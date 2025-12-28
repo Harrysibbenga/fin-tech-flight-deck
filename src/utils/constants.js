@@ -19,9 +19,9 @@ export const SLIDER_RANGES = {
 }
 
 export const CALCULATION_CONSTANTS = {
-  BASELINE_ANNUAL_RETURN: 0.04, // 4%
-  OPTIMIZED_ANNUAL_RETURN: 0.08, // 8%
-  LEVERAGE_MULTIPLIER: 1.08,
+  BASELINE_ANNUAL_RETURN: 0.05,    // 5% - typical savings/conservative investment
+  OPTIMIZED_ANNUAL_RETURN: 0.07,   // 7% - equity-leveraged property returns
+  LEVERAGE_MULTIPLIER: 1.0,        // Remove leverage multiplier (was causing inflation)
   YEARS_PROJECTION: 30
 }
 

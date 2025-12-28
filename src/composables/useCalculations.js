@@ -10,14 +10,15 @@ import { CALCULATION_CONSTANTS } from '@/utils/constants'
  *   @param {number} sliderValues.value.cash - Available cash
  *   @param {number} sliderValues.value.monthlySavings - Monthly savings amount
  *   @param {number} sliderValues.value.investmentInterest - Investment property interest (0-100)
- * @param {import('vue').Ref<boolean>} isOptimized - Reactive boolean for optimization state
  * @returns {Object} Calculation results and chart data
  *   @returns {import('vue').ComputedRef<Object>} results - Computed calculation results
  *   @returns {import('vue').ComputedRef<Object>} chartData - Computed chart data
  */
 export function useCalculations(sliderValues) {
+  
   /**
-   * Calculate baseline growth trajectory (current strategy)
+   * Calculate baseline trajectory - standard savings/investment approach
+   * Assumes: Keep equity in home, invest cash at conservative rate
    * @param {number} equity - Current home equity
    * @param {number} cash - Available cash
    * @param {number} monthlySavings - Monthly savings amount
@@ -26,20 +27,28 @@ export function useCalculations(sliderValues) {
    */
   const calculateBaselineTrajectory = (equity, cash, monthlySavings, years) => {
     const trajectory = []
-    let currentValue = equity + cash
-
+    const annualSavings = monthlySavings * 12
+    const rate = CALCULATION_CONSTANTS.BASELINE_ANNUAL_RETURN
+    
+    // Start with just cash (equity stays locked in home)
+    let investableAssets = cash
+    
     for (let year = 0; year <= years; year++) {
-      trajectory.push(Math.round(currentValue))
-      // Compound: previous total grows at baseline rate + annual savings added
-      currentValue = currentValue * (1 + CALCULATION_CONSTANTS.BASELINE_ANNUAL_RETURN) + (monthlySavings * 12)
+      // Total wealth = home equity (grows slowly) + investable assets
+      const homeEquityValue = equity * Math.pow(1.03, year) // 3% home appreciation
+      const totalWealth = homeEquityValue + investableAssets
+      trajectory.push(Math.round(totalWealth))
+      
+      // Investable assets grow and receive new savings
+      investableAssets = investableAssets * (1 + rate) + annualSavings
     }
-
+    
     return trajectory
   }
 
   /**
-   * Calculate optimized growth trajectory (with equity optimization)
-   * Each year compounds on the previous year's total
+   * Calculate optimized trajectory - equity release strategy
+   * Assumes: Release some equity to invest at higher returns
    * @param {number} equity - Current home equity
    * @param {number} cash - Available cash
    * @param {number} monthlySavings - Monthly savings amount
@@ -48,90 +57,74 @@ export function useCalculations(sliderValues) {
    */
   const calculateOptimizedTrajectory = (equity, cash, monthlySavings, years) => {
     const trajectory = []
-    let currentValue = equity + cash
-
+    const annualSavings = monthlySavings * 12
+    const rate = CALCULATION_CONSTANTS.OPTIMIZED_ANNUAL_RETURN
+    
+    // Release 50% of equity to invest (realistic LTV)
+    const releasedEquity = equity * 0.5
+    const remainingEquity = equity * 0.5
+    let investableAssets = cash + releasedEquity
+    
     for (let year = 0; year <= years; year++) {
-      trajectory.push(Math.round(currentValue))
-      // Optimized: higher return rate with leverage effect on growth
-      currentValue = currentValue * (1 + CALCULATION_CONSTANTS.OPTIMIZED_ANNUAL_RETURN) + (monthlySavings * 12)
+      // Remaining home equity still appreciates
+      const homeEquityValue = remainingEquity * Math.pow(1.03, year)
+      const totalWealth = homeEquityValue + investableAssets
+      trajectory.push(Math.round(totalWealth))
+      
+      // Investable assets grow at optimized rate
+      investableAssets = investableAssets * (1 + rate) + annualSavings
     }
-
+    
     return trajectory
   }
 
   /**
-   * Calculate years gained - how many years earlier you reach your goal with optimization
-   * Uses a more realistic approach based on when optimized reaches baseline's final value
+   * Calculate years gained - when does optimized reach baseline's final value?
    * @param {Array<number>} baselineTrajectory - Baseline growth trajectory array
    * @param {Array<number>} optimizedTrajectory - Optimized growth trajectory array
    * @returns {number} Years gained by optimizing
    */
   const calculateYearsGained = (baselineTrajectory, optimizedTrajectory) => {
     const baselineFinal = baselineTrajectory[baselineTrajectory.length - 1]
-
-    // Find which year the optimized trajectory first exceeds baseline's final value
-    let yearsToReachBaseline = optimizedTrajectory.length - 1 // Default to full period
-
+    
+    // Find when optimized first exceeds baseline's final value
     for (let year = 0; year < optimizedTrajectory.length; year++) {
       if (optimizedTrajectory[year] >= baselineFinal) {
-        yearsToReachBaseline = year
-        break
+        const yearsGained = (baselineTrajectory.length - 1) - year
+        // Cap between 0.5 and 10 years for realistic display
+        return Math.min(10, Math.max(0.5, yearsGained))
       }
     }
-
-    // Years gained = total years - years needed with optimization
-    const totalYears = baselineTrajectory.length - 1
-    const yearsGained = totalYears - yearsToReachBaseline
-
-    // DEBUG: Log calculation values (TEMPORARY - remove after debugging)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Years Calculation] Baseline final:', baselineFinal)
-      console.log('[Years Calculation] Optimized trajectory:', optimizedTrajectory.slice(0, 5), '...', optimizedTrajectory.slice(-5))
-      console.log('[Years Calculation] Years to reach baseline:', yearsToReachBaseline)
-      console.log('[Years Calculation] Total years:', totalYears)
-      console.log('[Years Calculation] Years gained (before bounds):', yearsGained)
-    }
-
-    // Return with bounds: minimum 0.5, maximum 12 (more realistic cap)
-    const boundedYearsGained = Math.min(12, Math.max(0.5, yearsGained))
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Years Calculation] Years gained (final):', boundedYearsGained)
-    }
-
-    return boundedYearsGained
+    
+    return 0.5 // Minimum if optimized never catches up (shouldn't happen)
   }
 
   /**
-   * Main calculation results
+   * Main results computation
    */
   const results = computed(() => {
     try {
-      const { age, equity, cash, monthlySavings } = sliderValues.value
+      const { equity, cash, monthlySavings } = sliderValues.value
       const years = CALCULATION_CONSTANTS.YEARS_PROJECTION
 
-      // Always calculate both trajectories
       const baselineTrajectory = calculateBaselineTrajectory(equity, cash, monthlySavings, years)
       const optimizedTrajectory = calculateOptimizedTrajectory(equity, cash, monthlySavings, years)
 
-      // Get final values
       const baselineFinal = baselineTrajectory[baselineTrajectory.length - 1]
       const optimizedFinal = optimizedTrajectory[optimizedTrajectory.length - 1]
 
-      // Use the new trajectory-based calculation
       const yearsGained = calculateYearsGained(baselineTrajectory, optimizedTrajectory)
-
       const valueDifference = optimizedFinal - baselineFinal
       const percentageGain = baselineFinal > 0
         ? ((optimizedFinal - baselineFinal) / baselineFinal) * 100
         : 0
 
       return {
-        baselineValue: Math.round(baselineFinal),
-        optimizedValue: Math.round(optimizedFinal),
+        baselineValue: baselineFinal,
+        optimizedValue: optimizedFinal,
         yearsGained: parseFloat(yearsGained.toFixed(1)),
-        percentageGain: parseFloat(percentageGain.toFixed(2)),
-        valueDifference: Math.round(valueDifference)
+        percentageGain: parseFloat(Math.min(percentageGain, 100).toFixed(1)), // Cap at 100%
+        valueDifference: valueDifference
       }
     } catch (error) {
       // Error boundary: return safe default values
@@ -146,27 +139,25 @@ export function useCalculations(sliderValues) {
   })
 
   /**
-   * Chart data for visualization
+   * Chart data computation
    */
   const chartData = computed(() => {
     try {
       const { equity, cash, monthlySavings } = sliderValues.value
       const years = CALCULATION_CONSTANTS.YEARS_PROJECTION
 
-      // Always calculate both trajectories
       const baselineTrajectory = calculateBaselineTrajectory(equity, cash, monthlySavings, years)
       const optimizedTrajectory = calculateOptimizedTrajectory(equity, cash, monthlySavings, years)
-
-      // Calculate difference for difference view
+      
       const differenceTrajectory = optimizedTrajectory.map((opt, index) => {
-        return opt - baselineTrajectory[index]
+        return Math.max(0, opt - baselineTrajectory[index])
       })
 
       return {
         baseline: baselineTrajectory,
         optimized: optimizedTrajectory,
         difference: differenceTrajectory,
-        labels: Array.from({ length: years + 1 }, (_, i) => `Year ${i + 1}`)
+        labels: Array.from({ length: years + 1 }, (_, i) => `Year ${i}`)
       }
     } catch (error) {
       // Error boundary: return empty arrays to prevent chart errors
@@ -175,7 +166,7 @@ export function useCalculations(sliderValues) {
         baseline: emptyArray,
         optimized: emptyArray,
         difference: emptyArray,
-        labels: Array.from({ length: CALCULATION_CONSTANTS.YEARS_PROJECTION + 1 }, (_, i) => `Year ${i + 1}`)
+        labels: Array.from({ length: CALCULATION_CONSTANTS.YEARS_PROJECTION + 1 }, (_, i) => `Year ${i}`)
       }
     }
   })
@@ -185,4 +176,3 @@ export function useCalculations(sliderValues) {
     chartData
   }
 }
-

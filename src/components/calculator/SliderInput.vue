@@ -379,13 +379,13 @@ onMounted(() => {
   .slider-input {
     height: 44px; /* Larger touch area */
   }
-  
+
   .slider-input::-webkit-slider-thumb {
     width: 32px;
     height: 32px;
     margin-top: -13px; /* (32-6)/2 = 13 */
   }
-  
+
   .slider-input::-moz-range-thumb {
     width: 32px;
     height: 32px;
