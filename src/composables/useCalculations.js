@@ -95,7 +95,7 @@ export function useCalculations(sliderValues) {
     if (!baselineFinal || !isFinite(baselineFinal) || baselineFinal <= 0) {
       return 0.5 // Default minimum for invalid baseline
     }
-    
+
     if (!optimizedFinal || !isFinite(optimizedFinal) || optimizedFinal <= baselineFinal) {
       return 0.5 // Default minimum if optimized doesn't outperform
     }
@@ -104,20 +104,20 @@ export function useCalculations(sliderValues) {
     // This calculates how many years at baseline rate to grow from baselineFinal to optimizedFinal
     const ratio = optimizedFinal / baselineFinal
     const baselineRate = CALCULATION_CONSTANTS.BASELINE_ANNUAL_RETURN
-    
+
     // Calculate total years needed at baseline rate (from start) to reach optimized final value
     // Formula: Future Value = Present Value * (1 + rate)^years
     // Solving for years: years = log(FV/PV) / log(1 + rate)
     let totalYearsNeeded = 0
-    
+
     if (ratio > 1 && baselineRate > 0) {
       totalYearsNeeded = Math.log(ratio) / Math.log(1 + baselineRate)
     }
-    
+
     // Years gained = extra years beyond the 30-year projection period
     const projectionYears = baselineTrajectory.length - 1
     let yearsGained = totalYearsNeeded - projectionYears
-    
+
     // If baseline would reach it within 30 years, calculate the difference
     // This represents how many years earlier optimized strategy gets there
     if (yearsGained < 0) {
@@ -125,12 +125,12 @@ export function useCalculations(sliderValues) {
       // Convert to positive and scale down: if baseline reaches in 25 years vs 30, that's ~1.7 years gained
       yearsGained = Math.abs(yearsGained) * 0.5
     }
-    
+
     // Handle edge cases
     if (!isFinite(yearsGained) || isNaN(yearsGained) || yearsGained < 0) {
       return 0.5 // Default minimum
     }
-    
+
     // Return with bounds: minimum 0.5, maximum 12 (realistic cap)
     return Math.min(12, Math.max(0.5, yearsGained))
   }

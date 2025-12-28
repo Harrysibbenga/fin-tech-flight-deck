@@ -229,15 +229,30 @@ onMounted(() => {
 
 // Watch for value changes after initial load
 watch(() => props.value, (newVal, oldVal) => {
-  if (!hasInitialAnimationRun.value) {
-    hasInitialAnimationRun.value = true
-    return // Skip - initial animation handles this
+  // Skip if value is invalid
+  if (newVal === undefined || isNaN(newVal) || newVal < 0) {
+    return
   }
 
-  if (newVal !== undefined && !isNaN(newVal) && newVal > 0 && newVal !== oldVal) {
-    animateToValue(newVal)
+  // Handle initial animation
+  if (!hasInitialAnimationRun.value) {
+    hasInitialAnimationRun.value = true
+    // Initial animation already handled in onMounted, but ensure we animate to current value
+    if (newVal > 0) {
+      animateToValue(Math.max(0.5, newVal))
+    }
+    return
   }
-})
+
+  // Always animate when value actually changes (even if it's the same number, animate for smoothness)
+  if (newVal !== oldVal || (oldVal === undefined && newVal > 0)) {
+    animateToValue(Math.max(0.5, newVal), true)
+    digitUpdated.value = true
+    setTimeout(() => {
+      digitUpdated.value = false
+    }, 500)
+  }
+}, { immediate: false })
 </script>
 
 <style scoped>

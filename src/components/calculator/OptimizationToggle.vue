@@ -1,6 +1,6 @@
 <template>
   <div class="optimization-section">
-    <div class="toggle-container" @click.prevent.stop="toggleView($event)">
+    <div class="toggle-container" @click.prevent.stop="toggleView($event)" @touchstart.prevent.stop="toggleView($event)">
       <div class="toggle-header">
         <h3>Compare Strategies</h3>
         <p>{{ viewMode === 'side-by-side' ? 'Viewing both trajectories together' : 'Showing the difference between strategies' }}</p>
@@ -15,6 +15,7 @@
           :aria-label="viewMode === 'side-by-side' ? 'Switch to difference view' : 'Switch to side by side view'"
           :aria-pressed="viewMode === 'difference'"
           @click.prevent.stop="toggleView($event)"
+          @touchstart.prevent.stop="toggleView($event)"
         >
           <span class="toggle-slider"></span>
         </button>
@@ -66,23 +67,45 @@ const viewMode = computed({
 })
 
 const toggleView = (event) => {
-  // Prevent any default behavior and bubbling
+  // Aggressively prevent any default behavior and bubbling
   if (event) {
     event.preventDefault()
     event.stopPropagation()
+    event.stopImmediatePropagation()
+    // Prevent form submission if inside a form
+    if (event.target && event.target.form) {
+      event.target.form.onsubmit = (e) => {
+        e.preventDefault()
+        return false
+      }
+    }
   }
-
-  // Store current scroll position
-  const scrollY = window.scrollY
-  const scrollX = window.scrollX
-
+  
+  // Store current scroll position BEFORE any DOM changes
+  const scrollY = window.pageYOffset || document.documentElement.scrollTop || window.scrollY
+  const scrollX = window.pageXOffset || document.documentElement.scrollLeft || window.scrollX
+  
   // Toggle the view mode
   viewMode.value = viewMode.value === 'side-by-side' ? 'difference' : 'side-by-side'
-
-  // Restore scroll position after Vue updates DOM
-  // Use nextTick to ensure DOM has updated
+  
+  // Restore scroll position multiple times to ensure it sticks
+  // Use both nextTick and requestAnimationFrame for maximum compatibility
   nextTick(() => {
-    window.scrollTo(scrollX, scrollY)
+    window.scrollTo({
+      left: scrollX,
+      top: scrollY,
+      behavior: 'auto' // Force instant scroll, no smooth scrolling
+    })
+    
+    // Also try requestAnimationFrame as a backup
+    requestAnimationFrame(() => {
+      window.scrollTo(scrollX, scrollY)
+    })
+    
+    // Mobile fallback - restore again after a short delay
+    setTimeout(() => {
+      window.scrollTo(scrollX, scrollY)
+    }, 100)
   })
 }
 </script>
@@ -108,6 +131,12 @@ const toggleView = (event) => {
   /* Prevent iOS momentum scroll during toggle */
   -webkit-overflow-scrolling: auto;
   overscroll-behavior: contain;
+  /* Prevent text selection on mobile */
+  -webkit-user-select: none;
+  user-select: none;
+  /* Prevent tap highlight */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* Optimize touch interactions */
 }
 
 .toggle-container:hover {
