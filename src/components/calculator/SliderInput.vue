@@ -127,13 +127,13 @@ const sliderStyle = computed(() => {
   } else {
     baseStyle['--slider-background'] = `linear-gradient(
       to right,
-      var(--slider-fill-color, var(--accent-primary)) 0%,
-      var(--slider-fill-color, var(--accent-primary)) ${sliderPercentage.value}%,
-      var(--bg-primary) ${sliderPercentage.value}%,
-      var(--bg-primary) 100%
+      #00d4ff 0%,
+      #00d4ff ${sliderPercentage.value}%,
+      #0a0e14 ${sliderPercentage.value}%,
+      #0a0e14 100%
     )`
-    baseStyle['--slider-fill-color'] = 'var(--accent-primary)'
-    baseStyle['--slider-thumb-color'] = 'var(--accent-primary)'
+    baseStyle['--slider-fill-color'] = '#00d4ff'
+    baseStyle['--slider-thumb-color'] = '#00d4ff'
   }
 
   return baseStyle
@@ -226,10 +226,10 @@ const handleMouseUp = () => {
   cursor: pointer;
   background: var(--slider-background, linear-gradient(
     to right,
-    var(--slider-fill-color, var(--accent-primary)) 0%,
-    var(--slider-fill-color, var(--accent-primary)) var(--slider-percentage),
-    var(--bg-primary) var(--slider-percentage),
-    var(--bg-primary) 100%
+    #00d4ff 0%,
+    #00d4ff var(--slider-percentage),
+    #0a0e14 var(--slider-percentage),
+    #0a0e14 100%
   ));
 }
 
@@ -240,17 +240,17 @@ const handleMouseUp = () => {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--slider-thumb-color, var(--accent-primary));
+  background: var(--slider-thumb-color, #00d4ff);
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 212, 255, 0.5),
               0 0 0 4px rgba(0, 212, 255, 0.2);
-  transition: all var(--duration-normal) var(--ease-bounce);
+  transition: all var(--duration-normal) cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .slider-input::-webkit-slider-thumb:hover {
   transform: scale(1.2);
-  box-shadow: 0 4px 16px var(--slider-thumb-color, rgba(0, 212, 255, 0.6)),
-              0 0 0 6px var(--slider-thumb-color, rgba(0, 212, 255, 0.3));
+  box-shadow: 0 4px 16px rgba(0, 212, 255, 0.6),
+              0 0 0 6px rgba(0, 212, 255, 0.3);
 }
 
 .slider-input:active::-webkit-slider-thumb {
@@ -262,16 +262,18 @@ const handleMouseUp = () => {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--slider-thumb-color, var(--accent-primary));
+  background: var(--slider-thumb-color, #00d4ff);
   cursor: pointer;
   border: none;
-  box-shadow: 0 2px 8px rgba(0, 212, 255, 0.5);
-  transition: all var(--duration-normal) var(--ease-bounce);
+  box-shadow: 0 2px 8px rgba(0, 212, 255, 0.5),
+              0 0 0 4px rgba(0, 212, 255, 0.2);
+  transition: all var(--duration-normal) cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .slider-input::-moz-range-thumb:hover {
   transform: scale(1.2);
-  box-shadow: 0 4px 16px var(--slider-thumb-color, rgba(0, 212, 255, 0.6));
+  box-shadow: 0 4px 16px rgba(0, 212, 255, 0.6),
+              0 0 0 6px rgba(0, 212, 255, 0.3);
 }
 
 .slider-input:active::-moz-range-thumb {
@@ -281,7 +283,7 @@ const handleMouseUp = () => {
 .slider-input::-moz-range-track {
   height: 6px;
   border-radius: 3px;
-  background: var(--bg-primary);
+  background: #0a0e14;
 }
 
 /* Touch target optimization */
