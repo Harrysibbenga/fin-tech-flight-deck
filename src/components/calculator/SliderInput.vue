@@ -264,36 +264,90 @@ onMounted(() => {
   }
 }
 
+/* Base slider input */
 .slider-input {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  outline: none;
+  height: 24px; /* Match thumb height for proper alignment */
+  background: transparent;
   cursor: pointer;
-  touch-action: none; /* Prevent page scroll while dragging on touch devices */
+  touch-action: none;
   -webkit-tap-highlight-color: transparent;
-  background: transparent; /* Track styling handled by pseudo-elements */
+  margin: 0;
+  padding: 0;
 }
 
-/* Explicit track styling for Webkit/Chrome (mobile fix) */
+/* Webkit Track (Chrome, Safari, Edge) */
 .slider-input::-webkit-slider-runnable-track {
   width: 100%;
   height: 6px;
-  border-radius: 3px;
-  /* DEBUG: Temporary border to verify track is rendering - REMOVE after debugging */
-  /* border: 1px solid red; */
   background: linear-gradient(
     to right,
     var(--slider-fill-color, #00d4ff) 0%,
     var(--slider-fill-color, #00d4ff) var(--slider-percentage, 50%),
-    #0a0e14 var(--slider-percentage, 50%),
-    #0a0e14 100%
+    #1a1f2e var(--slider-percentage, 50%),
+    #1a1f2e 100%
   );
+  border-radius: 3px;
+  border: none;
 }
 
-/* Sentiment slider track gradient */
+/* Webkit Thumb */
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: var(--slider-thumb-color, #00d4ff);
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  margin-top: -9px; /* Center thumb on track: (thumb-height - track-height) / 2 = (24-6)/2 = 9 */
+  box-shadow: 0 2px 8px rgba(0, 212, 255, 0.5),
+              0 0 0 4px rgba(0, 212, 255, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.slider-input::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 16px rgba(0, 212, 255, 0.6),
+              0 0 0 6px rgba(0, 212, 255, 0.3);
+}
+
+.slider-input:active::-webkit-slider-thumb {
+  transform: scale(1.1);
+}
+
+/* Firefox Track */
+.slider-input::-moz-range-track {
+  width: 100%;
+  height: 6px;
+  background: #1a1f2e;
+  border-radius: 3px;
+  border: none;
+}
+
+/* Firefox Progress (filled portion) */
+.slider-input::-moz-range-progress {
+  height: 6px;
+  background: var(--slider-fill-color, #00d4ff);
+  border-radius: 3px 0 0 3px;
+}
+
+/* Firefox Thumb */
+.slider-input::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: var(--slider-thumb-color, #00d4ff);
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 212, 255, 0.5),
+              0 0 0 4px rgba(0, 212, 255, 0.2);
+}
+
+/* Sentiment mode track override - filled portion shows sentiment color, unfilled shows gradient */
 .slider-input[data-sentiment-mode="true"]::-webkit-slider-runnable-track {
   background: linear-gradient(
     to right,
@@ -308,115 +362,41 @@ onMounted(() => {
   );
 }
 
-/* Webkit browsers (Chrome, Safari, Edge) */
-.slider-input::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--slider-thumb-color, #00d4ff);
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 212, 255, 0.5),
-              0 0 0 4px rgba(0, 212, 255, 0.2);
-  transition: all var(--duration-normal) cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.slider-input::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 4px 16px rgba(0, 212, 255, 0.6),
-              0 0 0 6px rgba(0, 212, 255, 0.3);
-}
-
-.slider-input:active::-webkit-slider-thumb {
-  transform: scale(1.15);
-  box-shadow: 0 0 0 8px rgba(0, 212, 255, 0.2),
-              0 4px 20px rgba(0, 212, 255, 0.5);
-}
-
-/* Firefox */
-.slider-input::-moz-range-thumb {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--slider-thumb-color, #00d4ff);
-  cursor: pointer;
-  border: none;
-  box-shadow: 0 2px 8px rgba(0, 212, 255, 0.5),
-              0 0 0 4px rgba(0, 212, 255, 0.2);
-  transition: all var(--duration-normal) cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.slider-input::-moz-range-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 4px 16px rgba(0, 212, 255, 0.6),
-              0 0 0 6px rgba(0, 212, 255, 0.3);
-}
-
-.slider-input:active::-moz-range-thumb {
-  transform: scale(1.1);
-}
-
-/* Firefox track */
-.slider-input::-moz-range-track {
-  width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: #0a0e14;
-}
-
-/* Firefox progress (filled portion) */
-.slider-input::-moz-range-progress {
-  height: 6px;
-  border-radius: 3px;
-  background: var(--slider-fill-color, #00d4ff);
-}
-
-/* Firefox sentiment mode - use background gradient */
 .slider-input[data-sentiment-mode="true"]::-moz-range-track {
-  background: linear-gradient(to right, #ff4444 0%, #ff9500 50%, #00ff88 100%);
+  background: linear-gradient(
+    to right,
+    #ff4444 0%,
+    #ff4444 33%,
+    #ff9500 33%,
+    #ff9500 66%,
+    #00ff88 66%,
+    #00ff88 100%
+  );
 }
 
-/* Touch target optimization - larger thumb and increased touch area on mobile */
+/* Mobile touch targets */
 @media (max-width: 768px) {
   .slider-input {
-    height: 12px;
-    padding: 16px 0;
-    margin: -16px 0;
-    background-clip: content-box;
+    height: 44px; /* Larger touch area */
   }
-
-  .slider-input::-webkit-slider-runnable-track {
-    height: 12px;
-    border-radius: 6px;
-  }
-
-  .slider-input::-moz-range-track {
-    height: 12px;
-    border-radius: 6px;
-  }
-
-  .slider-input::-moz-range-progress {
-    height: 12px;
-    border-radius: 6px;
-  }
-
+  
   .slider-input::-webkit-slider-thumb {
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
+    margin-top: -13px; /* (32-6)/2 = 13 */
   }
-
+  
   .slider-input::-moz-range-thumb {
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
   }
 }
 
-/* Focus styles for accessibility */
+/* Focus styles */
 .slider-input:focus-visible {
   outline: 2px solid var(--accent-primary);
   outline-offset: 4px;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 /* Prevent layout shift during updates */
@@ -432,12 +412,7 @@ onMounted(() => {
     transition: none;
   }
 
-  .slider-input {
-    transition: none;
-  }
-
-  .slider-input::-webkit-slider-thumb,
-  .slider-input::-moz-range-thumb {
+  .slider-input::-webkit-slider-thumb {
     transition: none;
   }
 

@@ -94,11 +94,11 @@ export function useCalculations(sliderValues) {
 
     // Return with bounds: minimum 0.5, maximum 12 (more realistic cap)
     const boundedYearsGained = Math.min(12, Math.max(0.5, yearsGained))
-    
+
     if (process.env.NODE_ENV === 'development') {
       console.log('[Years Calculation] Years gained (final):', boundedYearsGained)
     }
-    
+
     return boundedYearsGained
   }
 
