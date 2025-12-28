@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { DEBOUNCE_DELAY } from '@/utils/constants'
 
 const props = defineProps({
@@ -195,6 +195,14 @@ const handleMouseUp = () => {
     debounceTimer = null
   }
 }
+
+// DEBUG: Check CSS variable is being set (TEMPORARY - remove after debugging)
+onMounted(() => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[Slider ${props.id}] Percentage:`, sliderPercentage.value, '%')
+    console.log(`[Slider ${props.id}] Fill color:`, sliderStyle.value['--slider-fill-color'])
+  }
+})
 </script>
 
 <style scoped>
@@ -274,6 +282,8 @@ const handleMouseUp = () => {
   width: 100%;
   height: 6px;
   border-radius: 3px;
+  /* DEBUG: Temporary border to verify track is rendering - REMOVE after debugging */
+  /* border: 1px solid red; */
   background: linear-gradient(
     to right,
     var(--slider-fill-color, #00d4ff) 0%,

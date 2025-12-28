@@ -110,6 +110,13 @@ onMounted(() => {
 })
 </script>
 
+<!-- DEBUG: Prevent scroll behavior on html - TEMPORARY fix -->
+<style>
+html {
+  scroll-behavior: auto !important;
+}
+</style>
+
 <style scoped>
 .app-container {
   min-height: 100vh;
