@@ -41,6 +41,7 @@ export function useCalculations(sliderValues) {
 
   /**
    * Calculate optimized growth trajectory (with equity optimization)
+   * Each year compounds on the previous year's total, with leverage applied to growth rate
    * @param {number} equity - Current home equity
    * @param {number} cash - Available cash
    * @param {number} monthlySavings - Monthly savings amount
@@ -50,16 +51,18 @@ export function useCalculations(sliderValues) {
   const calculateOptimizedTrajectory = (equity, cash, monthlySavings, years) => {
     const trajectory = []
     let currentValue = equity + cash
+    
+    // Apply leverage multiplier to the growth rate (not the principal)
+    // Effective growth rate = optimized return * leverage multiplier
+    const leveragedGrowthRate = CALCULATION_CONSTANTS.OPTIMIZED_ANNUAL_RETURN * CALCULATION_CONSTANTS.LEVERAGE_MULTIPLIER
+    const annualSavings = monthlySavings * 12
 
     for (let year = 0; year <= years; year++) {
       trajectory.push(currentValue)
 
-      // Optimized growth: leverage equity for higher returns, monthly savings accumulate
-      const annualSavings = monthlySavings * 12
-      // Apply leverage multiplier to equity portion
-      const equityGrowth = equity * CALCULATION_CONSTANTS.LEVERAGE_MULTIPLIER * (1 + CALCULATION_CONSTANTS.OPTIMIZED_ANNUAL_RETURN)
-      const cashGrowth = cash * (1 + CALCULATION_CONSTANTS.OPTIMIZED_ANNUAL_RETURN)
-      currentValue = equityGrowth + cashGrowth + annualSavings
+      // Compound on previous year's total: currentValue = previousValue * (1 + growthRate) + annualSavings
+      // This ensures proper compounding over all years
+      currentValue = currentValue * (1 + leveragedGrowthRate) + annualSavings
     }
 
     return trajectory

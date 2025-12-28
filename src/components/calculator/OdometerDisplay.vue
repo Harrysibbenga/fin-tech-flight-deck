@@ -194,18 +194,21 @@ const animateToValue = async (targetValue, triggerPulse = true) => {
 
 // Initialize on mount - immediately show "0.0" then animate
 onMounted(() => {
-  // Immediately show "0.0" with no animation
-  initializeDigits(0, false)
-  hasInitialized.value = true
-
   // After 100ms delay, animate to calculated value
   // Always run this animation on first load, even if value is already computed
   setTimeout(() => {
-    const targetValue = props.value !== undefined && !isNaN(props.value) && props.value >= 0
-      ? Math.max(0.1, props.value)
-      : 0.1
-
-    animateToValue(targetValue, true)
+    // Immediately show "0.0" with no animation
+    initializeDigits(0, false)
+    hasInitialized.value = true
+    
+    // Then animate to calculated value
+    setTimeout(() => {
+      const targetValue = props.value !== undefined && !isNaN(props.value) && props.value >= 0
+        ? Math.max(0.1, props.value)
+        : 0.1
+      
+      animateToValue(targetValue, true)
+    }, 50)
   }, 100)
 })
 
@@ -337,6 +340,47 @@ watch(() => props.value, (newVal, oldVal) => {
 .odometer-sublabel {
   color: var(--text-tertiary);
   font-size: var(--text-sm);
+}
+
+/* Skeleton loader styles */
+.odometer-skeleton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: var(--spacing-4);
+  min-height: 80px;
+}
+
+.skeleton-digit {
+  width: 60px;
+  height: 72px;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-separator {
+  width: 16px;
+  height: 72px;
+}
+
+@media (max-width: 768px) {
+  .skeleton-digit {
+    width: 48px;
+    height: 60px;
+  }
+
+  .skeleton-separator {
+    width: 12px;
+    height: 60px;
+  }
 }
 
 @media (max-width: 768px) {

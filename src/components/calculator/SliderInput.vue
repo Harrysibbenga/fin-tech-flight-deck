@@ -159,6 +159,11 @@ const sliderValueColor = computed(() => {
 const handleInput = (event) => {
   const value = parseFloat(event.target.value)
 
+  // Haptic feedback on mobile if supported
+  if ('vibrate' in navigator) {
+    navigator.vibrate(10) // Brief vibration on value change
+  }
+
   // Update UI immediately (for smooth slider movement)
   emit('update:modelValue', value)
 

@@ -1,6 +1,12 @@
 <template>
   <div class="chart-container">
+    <!-- Skeleton loader while data is empty -->
+    <div v-if="isLoading" class="chart-skeleton">
+      <div class="skeleton skeleton-chart-bar" v-for="n in 30" :key="n" :style="{ height: `${Math.random() * 60 + 20}%` }"></div>
+    </div>
+    <!-- Actual chart -->
     <Line
+      v-else
       :data="chartData"
       :options="chartOptions"
       :style="{ height: `${height}px` }"
@@ -86,11 +92,11 @@ const createGradientFill = computed(() => {
       0,
       chartArea.bottom
     )
-    
+
     // More visible gradient with specified opacity values
     gradient.addColorStop(0, 'rgba(0, 212, 255, 0.05)')
     gradient.addColorStop(1, 'rgba(0, 212, 255, 0.2)')
-    
+
     return gradient
   }
 })
@@ -196,7 +202,7 @@ const chartOptions = computed(() => {
   // Handle window resize smoothly
   options.responsive = true
   options.maintainAspectRatio = false
-  
+
   // Animation settings for smooth initial render
   options.animation = {
     duration: 0 // Disable initial animation for faster render
@@ -220,6 +226,14 @@ const chartOptions = computed(() => {
 
 // Track when chartArea becomes available for initial render
 const chartAreaAvailable = ref(false)
+
+// Check if chart data is loading
+const isLoading = computed(() => {
+  return !props.baselineData || 
+         props.baselineData.length === 0 || 
+         !props.optimizedData || 
+         props.optimizedData.length === 0
+})
 
 // Handle window resize for smooth chart updates
 let resizeObserver = null
@@ -263,6 +277,30 @@ onUnmounted(() => {
   filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.3));
 }
 
+/* Chart skeleton loader */
+.chart-skeleton {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 400px;
+  gap: 4px;
+  padding: var(--spacing-4);
+}
+
+.skeleton-chart-bar {
+  flex: 1;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px 4px 0 0;
+  min-height: 20px;
+}
+
 @media (max-width: 768px) {
   .chart-container {
     padding: var(--spacing-4);
@@ -270,6 +308,11 @@ onUnmounted(() => {
   
   .chart-canvas {
     filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.25));
+  }
+
+  .chart-skeleton {
+    height: 300px;
+    gap: 2px;
   }
 }
 

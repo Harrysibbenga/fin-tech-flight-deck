@@ -70,8 +70,22 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, inject } from 'vue'
 import { isValidEmail } from '@/utils/validators'
+import { formatCurrency, formatNumber } from '@/utils/formatters'
+import jsPDF from 'jspdf'
+
+// Inject slider values and results from parent (or use props)
+const props = defineProps({
+  sliderValues: {
+    type: Object,
+    default: () => ({})
+  },
+  results: {
+    type: Object,
+    default: () => ({})
+  }
+})
 
 const email = ref('')
 const emailError = ref('')
@@ -108,14 +122,100 @@ const handleSubmit = async () => {
 }
 
 const downloadPDF = () => {
-  // TODO: Generate and download PDF
-  console.log('Downloading PDF...')
-  // Placeholder: Create a simple PDF download
-  const link = document.createElement('a')
-  link.href = '#' // Replace with actual PDF URL
-  link.download = 'wealth-optimization-blueprint.pdf'
-  // link.click() // Uncomment when PDF is ready
-  alert('PDF download will be available once the PDF generation is implemented.')
+  try {
+    const doc = new jsPDF()
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const margin = 20
+    let yPosition = margin
+
+    // Title
+    doc.setFontSize(20)
+    doc.setTextColor(0, 212, 255)
+    doc.text('Your Wealth Optimization Blueprint', pageWidth / 2, yPosition, { align: 'center' })
+    yPosition += 15
+
+    // Subtitle
+    doc.setFontSize(12)
+    doc.setTextColor(139, 146, 168)
+    doc.text('Personalized Financial Strategy Report', pageWidth / 2, yPosition, { align: 'center' })
+    yPosition += 20
+
+    // Current Situation
+    doc.setFontSize(16)
+    doc.setTextColor(255, 255, 255)
+    doc.text('Your Current Situation', margin, yPosition)
+    yPosition += 10
+
+    doc.setFontSize(11)
+    doc.setTextColor(139, 146, 168)
+    const sliderValues = props.sliderValues || {}
+    const results = props.results || {}
+    
+    if (sliderValues.age !== undefined) {
+      doc.text(`Age: ${sliderValues.age} years`, margin + 5, yPosition)
+      yPosition += 7
+    }
+    if (sliderValues.equity !== undefined) {
+      doc.text(`Home Equity: ${formatCurrency(sliderValues.equity)}`, margin + 5, yPosition)
+      yPosition += 7
+    }
+    if (sliderValues.cash !== undefined) {
+      doc.text(`Available Cash: ${formatCurrency(sliderValues.cash)}`, margin + 5, yPosition)
+      yPosition += 7
+    }
+    if (sliderValues.monthlySavings !== undefined) {
+      doc.text(`Monthly Savings: ${formatCurrency(sliderValues.monthlySavings)}/month`, margin + 5, yPosition)
+      yPosition += 7
+    }
+    
+    yPosition += 10
+
+    // Results
+    doc.setFontSize(16)
+    doc.setTextColor(0, 255, 136)
+    doc.text('Your Optimization Results', margin, yPosition)
+    yPosition += 10
+
+    doc.setFontSize(11)
+    doc.setTextColor(139, 146, 168)
+    
+    if (results.yearsGained !== undefined) {
+      doc.setTextColor(0, 255, 136)
+      doc.text(`Years You Could Gain: ${formatNumber(results.yearsGained, 1)} years`, margin + 5, yPosition)
+      doc.setTextColor(139, 146, 168)
+      yPosition += 7
+    }
+    if (results.baselineValue !== undefined) {
+      doc.text(`Baseline Final Value: ${formatCurrency(results.baselineValue)}`, margin + 5, yPosition)
+      yPosition += 7
+    }
+    if (results.optimizedValue !== undefined) {
+      doc.text(`Optimized Final Value: ${formatCurrency(results.optimizedValue)}`, margin + 5, yPosition)
+      yPosition += 7
+    }
+    if (results.valueDifference !== undefined) {
+      doc.text(`Value Difference: ${formatCurrency(results.valueDifference)}`, margin + 5, yPosition)
+      yPosition += 7
+    }
+    if (results.percentageGain !== undefined) {
+      doc.text(`Percentage Gain: ${formatNumber(results.percentageGain, 2)}%`, margin + 5, yPosition)
+      yPosition += 7
+    }
+
+    yPosition += 10
+
+    // Footer note
+    doc.setFontSize(9)
+    doc.setTextColor(90, 96, 112)
+    doc.text('For illustration purposes only. Consult a financial advisor for personalized advice.', 
+      pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' })
+
+    // Download
+    doc.save('wealth-optimization-blueprint.pdf')
+  } catch (error) {
+    console.error('PDF generation error:', error)
+    alert('Error generating PDF. Please try again.')
+  }
 }
 
 const shareWhatsApp = () => {
