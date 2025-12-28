@@ -156,7 +156,7 @@ const animateToValue = async (targetValue) => {
 
   await Promise.all(animationPromises)
   isAnimating.value = false
-  
+
   // Trigger pulse animation
   digitUpdated.value = true
   setTimeout(() => {
@@ -168,7 +168,7 @@ const animateToValue = async (targetValue) => {
 onMounted(() => {
   // Start from 0 for initial animation
   initializeDigits(0)
-  
+
   // Animate to actual value after a brief delay to ensure calculations are ready
   if (props.value !== undefined && !isNaN(props.value) && props.value >= 0) {
     // Use nextTick to ensure parent calculations have completed
