@@ -23,6 +23,11 @@ export const CHART_OPTIONS = {
   maintainAspectRatio: false,
   interaction: {
     mode: 'index',
+    intersect: false,
+    axis: 'x'
+  },
+  hover: {
+    mode: 'index',
     intersect: false
   },
   layout: {
@@ -45,17 +50,47 @@ export const CHART_OPTIONS = {
       }
     },
     tooltip: {
-      backgroundColor: CHART_COLORS.tooltipBg,
+      backgroundColor: 'rgba(10, 14, 20, 0.95)',
       titleColor: '#ffffff',
-      bodyColor: CHART_COLORS.text,
-      borderColor: CHART_COLORS.tooltipBorder,
+      titleFont: {
+        size: 14,
+        weight: '600'
+      },
+      bodyColor: '#8b92a8',
+      bodyFont: {
+        size: 13
+      },
+      borderColor: 'rgba(0, 212, 255, 0.3)',
       borderWidth: 1,
-      padding: 16,
+      padding: {
+        top: 12,
+        bottom: 12,
+        left: 16,
+        right: 16
+      },
       displayColors: true,
-      cornerRadius: 8,
+      boxWidth: 12,
+      boxHeight: 12,
+      boxPadding: 4,
+      cornerRadius: 12,
+      caretSize: 8,
+      caretPadding: 8,
       callbacks: {
+        title: (tooltipItems) => {
+          return tooltipItems[0].label
+        },
         label: (context) => {
-          return `£${context.parsed.y.toLocaleString()}`
+          const value = context.parsed.y
+          return ` ${context.dataset.label}: £${value.toLocaleString('en-GB')}`
+        },
+        afterBody: (tooltipItems) => {
+          if (tooltipItems.length === 2) {
+            const baseline = tooltipItems[0].parsed.y
+            const optimized = tooltipItems[1].parsed.y
+            const diff = optimized - baseline
+            return ['', `Difference: +£${diff.toLocaleString('en-GB')}`]
+          }
+          return []
         }
       }
     }
