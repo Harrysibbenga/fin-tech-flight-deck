@@ -1,7 +1,16 @@
 <template>
   <div class="odometer-container">
     <div class="odometer-label">Years You Could Gain</div>
-    <div class="odometer-value" role="status" :aria-live="isAnimating ? 'polite' : 'off'">
+
+    <!-- Skeleton loader while calculating -->
+    <div v-if="loading" class="odometer-skeleton">
+      <Skeleton width="60px" height="72px" radius="12px" />
+      <Skeleton width="16px" height="72px" radius="4px" />
+      <Skeleton width="60px" height="72px" radius="12px" />
+    </div>
+
+    <!-- Actual odometer display -->
+    <div v-else class="odometer-value" role="status" :aria-live="isAnimating ? 'polite' : 'off'">
       <!-- Whole number digits -->
       <div
         v-for="(digit, index) in wholeNumberDigits"
@@ -38,11 +47,16 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { ANIMATION_DURATION } from '@/utils/constants'
+import Skeleton from '@/components/common/Skeleton.vue'
 
 const props = defineProps({
   value: {
     type: Number,
     default: 0
+  },
+  loading: {
+    type: Boolean,
+    default: false
   }
 })
 

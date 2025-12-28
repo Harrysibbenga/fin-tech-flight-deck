@@ -27,7 +27,7 @@
 
       <!-- Results Section -->
       <section class="results-section">
-        <OdometerDisplay :value="results.yearsGained" />
+        <OdometerDisplay :value="results.yearsGained" :loading="isCalculating" />
 
         <MetricsCards
           :optimized-value="results.optimizedValue"
@@ -89,6 +89,9 @@ const viewMode = ref('side-by-side')
 // Page load state for fade-in animation
 const isLoaded = ref(false)
 
+// Calculation loading state for skeleton display
+const isCalculating = ref(true)
+
 // Use calculations composable (always calculates both trajectories)
 const { results, chartData } = useCalculations(sliderValues)
 
@@ -99,6 +102,11 @@ onMounted(() => {
   setTimeout(() => {
     isLoaded.value = true
   }, 10)
+
+  // Hide loading skeleton after calculations complete
+  setTimeout(() => {
+    isCalculating.value = false
+  }, 500)
 })
 </script>
 
