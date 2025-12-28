@@ -4,6 +4,7 @@
       :data="chartData"
       :options="chartOptions"
       :style="{ height: `${height}px` }"
+      class="chart-canvas"
     />
   </div>
 </template>
@@ -64,6 +65,36 @@ const props = defineProps({
   }
 })
 
+/**
+ * Create gradient fill function with chartArea check and fallback
+ * More visible gradient: top rgba(0, 212, 255, 0.05), bottom rgba(0, 212, 255, 0.2)
+ */
+const createGradientFill = computed(() => {
+  return (context) => {
+    const chart = context.chart
+    const { ctx, chartArea } = chart
+
+    // Fallback solid color if chartArea is not available
+    if (!chartArea) {
+      return 'rgba(0, 212, 255, 0.15)'
+    }
+
+    // Create gradient from top to bottom
+    const gradient = ctx.createLinearGradient(
+      0,
+      chartArea.top,
+      0,
+      chartArea.bottom
+    )
+    
+    // More visible gradient with specified opacity values
+    gradient.addColorStop(0, 'rgba(0, 212, 255, 0.05)')
+    gradient.addColorStop(1, 'rgba(0, 212, 255, 0.2)')
+    
+    return gradient
+  }
+})
+
 const chartData = computed(() => {
   const labels = props.labels.length > 0
     ? props.labels
@@ -110,26 +141,17 @@ const chartData = computed(() => {
         label: 'Optimized Trajectory',
         data: props.optimizedData,
         borderColor: '#00d4ff',
-        backgroundColor: (context) => {
-          if (!context.chart.chartArea) {
-            return 'rgba(0, 212, 255, 0.1)'
-          }
-          const ctx = context.chart.ctx
-          const gradient = ctx.createLinearGradient(
-            0,
-            context.chart.chartArea.top,
-            0,
-            context.chart.chartArea.bottom
-          )
-          gradient.addColorStop(0, 'rgba(0, 212, 255, 0)')
-          gradient.addColorStop(1, 'rgba(0, 212, 255, 0.15)')
-          return gradient
-        },
+        backgroundColor: createGradientFill.value,
         borderWidth: 3,
         tension: 0.4,
         pointRadius: 0,
         pointHoverRadius: 6,
-        fill: true
+        fill: true,
+        // Subtle glow effect using shadow properties
+        shadowOffsetX: 0,
+        shadowOffsetY: 0,
+        shadowBlur: 15,
+        shadowColor: 'rgba(0, 212, 255, 0.5)'
       }
     ]
   }
@@ -174,9 +196,30 @@ const chartOptions = computed(() => {
   // Handle window resize smoothly
   options.responsive = true
   options.maintainAspectRatio = false
+  
+  // Animation settings for smooth initial render
+  options.animation = {
+    duration: 0 // Disable initial animation for faster render
+  }
+
+  // Ensure gradient renders on initial load by using onAfterLayout
+  // This ensures chartArea is available and triggers a redraw
+  options.onAfterLayout = (chart) => {
+    // Force chart update on first layout to ensure gradient renders with chartArea
+    if (chart && !chartAreaAvailable.value && chart.chartArea) {
+      chartAreaAvailable.value = true
+      // Use requestAnimationFrame to ensure DOM is ready
+      requestAnimationFrame(() => {
+        chart.update('none') // Update without animation
+      })
+    }
+  }
 
   return options
 })
+
+// Track when chartArea becomes available for initial render
+const chartAreaAvailable = ref(false)
 
 // Handle window resize for smooth chart updates
 let resizeObserver = null
@@ -215,9 +258,25 @@ onUnmounted(() => {
   outline-offset: 2px;
 }
 
+/* Subtle glow effect around the optimized line using CSS filter */
+.chart-canvas {
+  filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.3));
+}
+
 @media (max-width: 768px) {
   .chart-container {
     padding: var(--spacing-4);
+  }
+  
+  .chart-canvas {
+    filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.25));
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .chart-canvas {
+    filter: none;
   }
 }
 </style>

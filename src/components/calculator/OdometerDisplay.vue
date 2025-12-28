@@ -204,7 +204,7 @@ onMounted(() => {
     const targetValue = props.value !== undefined && !isNaN(props.value) && props.value >= 0
       ? Math.max(0.1, props.value)
       : 0.1
-    
+
     animateToValue(targetValue, true)
   }, 100)
 })
