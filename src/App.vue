@@ -55,7 +55,7 @@
     </main>
 
     <footer class="app-footer">
-      <p>© 2024 Wealth Optimization. For illustration purposes only.</p>
+      <p>© 2025 Wealth Optimization. For illustration purposes only.</p>
     </footer>
   </div>
 </template>

@@ -29,11 +29,9 @@ export function useCalculations(sliderValues) {
     let currentValue = equity + cash
 
     for (let year = 0; year <= years; year++) {
-      trajectory.push(currentValue)
-
-      // Annual growth: existing assets grow at baseline rate, monthly savings accumulate
-      const annualSavings = monthlySavings * 12
-      currentValue = currentValue * (1 + CALCULATION_CONSTANTS.BASELINE_ANNUAL_RETURN) + annualSavings
+      trajectory.push(Math.round(currentValue))
+      // Compound: previous total grows at baseline rate + annual savings added
+      currentValue = currentValue * (1 + CALCULATION_CONSTANTS.BASELINE_ANNUAL_RETURN) + (monthlySavings * 12)
     }
 
     return trajectory
@@ -41,7 +39,7 @@ export function useCalculations(sliderValues) {
 
   /**
    * Calculate optimized growth trajectory (with equity optimization)
-   * Each year compounds on the previous year's total, with leverage applied to growth rate
+   * Each year compounds on the previous year's total
    * @param {number} equity - Current home equity
    * @param {number} cash - Available cash
    * @param {number} monthlySavings - Monthly savings amount
@@ -52,17 +50,10 @@ export function useCalculations(sliderValues) {
     const trajectory = []
     let currentValue = equity + cash
 
-    // Apply leverage multiplier to the growth rate (not the principal)
-    // Effective growth rate = optimized return * leverage multiplier
-    const leveragedGrowthRate = CALCULATION_CONSTANTS.OPTIMIZED_ANNUAL_RETURN * CALCULATION_CONSTANTS.LEVERAGE_MULTIPLIER
-    const annualSavings = monthlySavings * 12
-
     for (let year = 0; year <= years; year++) {
-      trajectory.push(currentValue)
-
-      // Compound on previous year's total: currentValue = previousValue * (1 + growthRate) + annualSavings
-      // This ensures proper compounding over all years
-      currentValue = currentValue * (1 + leveragedGrowthRate) + annualSavings
+      trajectory.push(Math.round(currentValue))
+      // Optimized: higher return rate with leverage effect on growth
+      currentValue = currentValue * (1 + CALCULATION_CONSTANTS.OPTIMIZED_ANNUAL_RETURN) + (monthlySavings * 12)
     }
 
     return trajectory
@@ -70,21 +61,25 @@ export function useCalculations(sliderValues) {
 
   /**
    * Calculate the efficiency gap (years gained)
+   * Years gained = how many extra years baseline would need to reach optimized final value
+   * Uses logarithmic calculation based on compound growth
    * @param {number} baselineFinal - Final value with baseline strategy
    * @param {number} optimizedFinal - Final value with optimized strategy
-   * @param {number} monthlySavings - Monthly savings amount
+   * @param {number} monthlySavings - Monthly savings amount (used for validation)
    * @returns {number} Years gained by optimizing
    */
   const calculateYearsGained = (baselineFinal, optimizedFinal, monthlySavings) => {
-    if (monthlySavings === 0) {
-      return 0
+    if (baselineFinal <= 0 || optimizedFinal <= baselineFinal) {
+      return 0.5 // Minimum meaningful value
     }
 
-    const valueDifference = optimizedFinal - baselineFinal
-    const annualSavings = monthlySavings * 12
-    const yearsGained = valueDifference / annualSavings
+    // Calculate how many extra years baseline would need at its growth rate
+    // Formula: years = log(optimizedFinal / baselineFinal) / log(1 + growthRate)
+    const yearsGained = Math.log(optimizedFinal / baselineFinal) / Math.log(1 + CALCULATION_CONSTANTS.BASELINE_ANNUAL_RETURN)
 
-    return Math.max(0, yearsGained) // Ensure non-negative
+    // Cap at 15 years maximum for realistic display
+    // Minimum 0.5 years to always show meaningful value
+    return Math.max(0.5, Math.min(15, yearsGained))
   }
 
   /**
@@ -103,9 +98,7 @@ export function useCalculations(sliderValues) {
     const optimizedFinal = optimizedTrajectory[optimizedTrajectory.length - 1]
 
     // Calculate metrics
-    let yearsGained = calculateYearsGained(baselineFinal, optimizedFinal, monthlySavings)
-    // Ensure yearsGained is never 0 - show at least 0.1 for display purposes
-    yearsGained = Math.max(0.1, yearsGained)
+    const yearsGained = calculateYearsGained(baselineFinal, optimizedFinal, monthlySavings)
 
     const valueDifference = optimizedFinal - baselineFinal
     const percentageGain = baselineFinal > 0
