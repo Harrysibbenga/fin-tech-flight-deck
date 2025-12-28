@@ -82,15 +82,15 @@ const valueUpdated = ref(false)
 let debounceTimer = null
 
 const formattedValue = computed(() => {
-  const value = props.formatFn(props.modelValue)
-  // Trigger pulse animation on value change
-  nextTick(() => {
-    valueUpdated.value = true
-    setTimeout(() => {
-      valueUpdated.value = false
-    }, 500)
-  })
-  return value
+  return props.formatFn(props.modelValue)
+})
+
+// Watch for value changes to trigger animation
+watch(() => props.modelValue, () => {
+  valueUpdated.value = true
+  setTimeout(() => {
+    valueUpdated.value = false
+  }, 500)
 })
 
 const sliderPercentage = computed(() => {

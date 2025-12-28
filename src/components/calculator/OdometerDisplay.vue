@@ -24,7 +24,7 @@
         class="odometer-digit-container"
         :style="{ '--digit-value': decimalDigit.currentValue }"
       >
-        <div class="odometer-digit-inner">
+        <div class="odometer-digit-inner" :class="{ 'value-updated': digitUpdated }">
           {{ decimalDigit.displayValue }}
         </div>
       </div>
@@ -155,6 +155,12 @@ const animateToValue = async (targetValue) => {
 
   await Promise.all(animationPromises)
   isAnimating.value = false
+  
+  // Trigger pulse animation
+  digitUpdated.value = true
+  setTimeout(() => {
+    digitUpdated.value = false
+  }, 500)
 }
 
 // Initialize on mount - start at 0 and animate to calculated value
