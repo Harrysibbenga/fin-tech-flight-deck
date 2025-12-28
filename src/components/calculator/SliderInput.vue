@@ -18,6 +18,7 @@
       :step="step"
       :value="modelValue"
       class="slider-input"
+      :data-sentiment-mode="sentimentMode"
       :aria-label="label"
       :aria-valuemin="min"
       :aria-valuemax="max"
@@ -99,6 +100,26 @@ const currentSentiment = computed(() => {
   ) || props.sentimentRanges[1] // Default to middle range
 })
 
+const sliderGradient = computed(() => {
+  if (props.sentimentMode && props.sentimentRanges.length > 0) {
+    // Create gradient across all sentiment ranges
+    const ranges = props.sentimentRanges
+    const max = props.max
+    const min = props.min
+    const range = max - min
+    
+    // Calculate stop positions for each color
+    const gradientStops = ranges.map((r, index) => {
+      const startPercent = ((r.min - min) / range) * 100
+      const endPercent = ((r.max - min) / range) * 100
+      return `${r.color} ${startPercent}%, ${r.color} ${endPercent}%`
+    }).join(', ')
+    
+    return `linear-gradient(to right, ${gradientStops})`
+  }
+  return null
+})
+
 const sliderStyle = computed(() => {
   const baseStyle = {
     '--slider-percentage': `${sliderPercentage.value}%`
@@ -106,20 +127,12 @@ const sliderStyle = computed(() => {
 
   if (props.sentimentMode && currentSentiment.value) {
     const sentiment = currentSentiment.value
+    baseStyle['--slider-thumb-color'] = sentiment.color
+    baseStyle['--slider-fill-color'] = sentiment.color
     
-    // Create gradient based on sentiment
-    if (sentiment.color === '#ff4444') {
-      // Red gradient (Not Interested)
-      baseStyle['--slider-fill-color'] = sentiment.color
-      baseStyle['--slider-thumb-color'] = sentiment.color
-    } else if (sentiment.color === '#ff9500') {
-      // Yellow/Orange gradient (Considering)
-      baseStyle['--slider-fill-color'] = sentiment.color
-      baseStyle['--slider-thumb-color'] = sentiment.color
-    } else if (sentiment.color === '#00ff88') {
-      // Green gradient (Definitely)
-      baseStyle['--slider-fill-color'] = sentiment.color
-      baseStyle['--slider-thumb-color'] = sentiment.color
+    // Add gradient for track background
+    if (sliderGradient.value) {
+      baseStyle['--slider-gradient'] = sliderGradient.value
     }
   } else {
     baseStyle['--slider-fill-color'] = 'var(--accent-primary)'
@@ -211,6 +224,31 @@ const handleMouseUp = () => {
   width: 100%;
   height: 6px;
   border-radius: 3px;
+  background: var(--slider-gradient, var(--bg-primary));
+  outline: none;
+  transition: background var(--duration-normal) var(--ease-in-out);
+  cursor: pointer;
+  position: relative;
+}
+
+/* Track fill overlay for sentiment mode */
+.slider-input::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: var(--slider-percentage);
+  background: var(--slider-fill-color, var(--accent-primary));
+  border-radius: 3px;
+  pointer-events: none;
+  opacity: 0.8;
+  transition: width var(--duration-normal) var(--ease-in-out),
+              background var(--duration-normal) var(--ease-in-out);
+}
+
+/* For non-sentiment sliders, use the original gradient approach */
+.slider-input:not([data-sentiment-mode]) {
   background: linear-gradient(
     to right,
     var(--slider-fill-color, var(--accent-primary)) 0%,
@@ -218,9 +256,10 @@ const handleMouseUp = () => {
     var(--bg-primary) var(--slider-percentage),
     var(--bg-primary) 100%
   );
-  outline: none;
-  transition: background var(--duration-normal) var(--ease-in-out);
-  cursor: pointer;
+}
+
+.slider-input:not([data-sentiment-mode])::before {
+  display: none;
 }
 
 /* Webkit browsers (Chrome, Safari, Edge) */
