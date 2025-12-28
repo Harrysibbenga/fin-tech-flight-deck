@@ -7,7 +7,7 @@
         v-for="(digit, index) in wholeNumberDigits"
         :key="`whole-${index}`"
         class="odometer-digit-container"
-        :class="{ 'pulse-scale': shouldPulse }"
+        :class="{ 'pulse-scale': shouldPulse, 'settled': !isAnimating && hasInitialAnimationRun }"
         :style="{ '--digit-value': digit.currentValue }"
       >
         <div class="odometer-digit-inner" :class="{ 'value-updated': digitUpdated }">
@@ -23,7 +23,7 @@
       <!-- Decimal digit -->
       <div
         class="odometer-digit-container"
-        :class="{ 'pulse-scale': shouldPulse }"
+        :class="{ 'pulse-scale': shouldPulse, 'settled': !isAnimating && hasInitialAnimationRun }"
         :style="{ '--digit-value': decimalDigit.currentValue }"
       >
         <div class="odometer-digit-inner" :class="{ 'value-updated': digitUpdated }">
@@ -48,8 +48,8 @@ const props = defineProps({
 
 const isAnimating = ref(false)
 const digitUpdated = ref(false)
-const hasInitialized = ref(false)
 const shouldPulse = ref(false)
+const hasInitialAnimationRun = ref(false)
 
 // Digit state for each position
 const wholeNumberDigits = ref([])
@@ -183,6 +183,11 @@ const animateToValue = async (targetValue, triggerPulse = true) => {
   await Promise.all(animationPromises)
   isAnimating.value = false
 
+  // Mark that initial animation has run
+  if (!hasInitialAnimationRun.value) {
+    hasInitialAnimationRun.value = true
+  }
+
   // Trigger pulse animation when value settles
   if (triggerPulse) {
     shouldPulse.value = true
@@ -194,31 +199,29 @@ const animateToValue = async (targetValue, triggerPulse = true) => {
 
 // Initialize on mount - immediately show "0.0" then animate
 onMounted(() => {
-  // After 100ms delay, animate to calculated value
-  // Always run this animation on first load, even if value is already computed
+  // Initialize at 0 immediately
+  initializeDigits(0)
+
+  // Animate to actual value after page load settles
   setTimeout(() => {
-    // Immediately show "0.0" with no animation
-    initializeDigits(0, false)
-    hasInitialized.value = true
-
-    // Then animate to calculated value
-    setTimeout(() => {
-      const targetValue = props.value !== undefined && !isNaN(props.value) && props.value >= 0
-        ? Math.max(0.1, props.value)
-        : 0.1
-
-      animateToValue(targetValue, true)
-    }, 50)
-  }, 100)
+    if (props.value !== undefined && !isNaN(props.value) && props.value > 0) {
+      animateToValue(Math.max(0.5, props.value))
+    } else {
+      // Default animation to show it works
+      animateToValue(0.5)
+    }
+  }, 600)
 })
 
 // Watch for value changes after initial load
 watch(() => props.value, (newVal, oldVal) => {
-  // Only animate if value actually changed AND we've already initialized
-  if (hasInitialized.value && newVal !== undefined && !isNaN(newVal) && newVal >= 0) {
-    if (oldVal !== undefined && newVal !== oldVal) {
-      animateToValue(newVal, true)
-    }
+  if (!hasInitialAnimationRun.value) {
+    hasInitialAnimationRun.value = true
+    return // Skip - initial animation handles this
+  }
+
+  if (newVal !== undefined && !isNaN(newVal) && newVal > 0 && newVal !== oldVal) {
+    animateToValue(newVal)
   }
 })
 </script>
@@ -281,6 +284,19 @@ watch(() => props.value, (newVal, oldVal) => {
   }
   50% {
     transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.odometer-digit-container.settled {
+  animation: settleScale 0.3s ease-out;
+}
+
+@keyframes settleScale {
+  0% {
+    transform: scale(1.05);
   }
   100% {
     transform: scale(1);
@@ -418,6 +434,10 @@ watch(() => props.value, (newVal, oldVal) => {
 
   .odometer-digit-container {
     transition: none;
+    animation: none;
+  }
+
+  .odometer-digit-container.settled {
     animation: none;
   }
 
