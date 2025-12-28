@@ -214,6 +214,10 @@ const handleMouseUp = () => {
   transform: scale(1.01);
 }
 
+.slider-container:active {
+  transform: scale(0.99);
+}
+
 .slider-label {
   color: var(--text-secondary);
   font-size: var(--text-sm);
@@ -258,6 +262,7 @@ const handleMouseUp = () => {
   transition: background var(--duration-normal) var(--ease-in-out);
   cursor: pointer;
   touch-action: none; /* Prevent page scroll while dragging on touch devices */
+  -webkit-tap-highlight-color: transparent;
   background: var(--slider-background, linear-gradient(
     to right,
     #00d4ff 0%,
@@ -288,7 +293,9 @@ const handleMouseUp = () => {
 }
 
 .slider-input:active::-webkit-slider-thumb {
-  transform: scale(1.1);
+  transform: scale(1.15);
+  box-shadow: 0 0 0 8px rgba(0, 212, 255, 0.2),
+              0 4px 20px rgba(0, 212, 255, 0.5);
 }
 
 /* Firefox */
@@ -320,9 +327,20 @@ const handleMouseUp = () => {
   background: #0a0e14;
 }
 
-/* Touch target optimization - larger thumb on mobile */
+/* Touch target optimization - larger thumb and increased touch area on mobile */
 @media (max-width: 768px) {
-  .slider-input::-webkit-slider-thumb,
+  .slider-input {
+    height: 12px;
+    padding: 16px 0;
+    margin: -16px 0;
+    background-clip: content-box;
+  }
+
+  .slider-input::-webkit-slider-thumb {
+    width: 44px;
+    height: 44px;
+  }
+
   .slider-input::-moz-range-thumb {
     width: 44px;
     height: 44px;
