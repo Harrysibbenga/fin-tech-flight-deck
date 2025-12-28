@@ -68,21 +68,21 @@ export function useCalculations(sliderValues) {
    */
   const calculateYearsGained = (baselineTrajectory, optimizedTrajectory) => {
     const baselineFinal = baselineTrajectory[baselineTrajectory.length - 1]
-    
+
     // Find which year the optimized trajectory first exceeds baseline's final value
     let yearsToReachBaseline = optimizedTrajectory.length - 1 // Default to full period
-    
+
     for (let year = 0; year < optimizedTrajectory.length; year++) {
       if (optimizedTrajectory[year] >= baselineFinal) {
         yearsToReachBaseline = year
         break
       }
     }
-    
+
     // Years gained = total years - years needed with optimization
     const totalYears = baselineTrajectory.length - 1
     const yearsGained = totalYears - yearsToReachBaseline
-    
+
     // Return with bounds: minimum 0.5, maximum 12 (more realistic cap)
     return Math.min(12, Math.max(0.5, yearsGained))
   }
