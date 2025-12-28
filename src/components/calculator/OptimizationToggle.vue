@@ -48,7 +48,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, nextTick } from 'vue'
 
 const props = defineProps({
   modelValue: {
@@ -66,20 +66,23 @@ const viewMode = computed({
 })
 
 const toggleView = (event) => {
-  // Prevent any default behavior that might cause scroll
+  // Prevent any default behavior and bubbling
   if (event) {
     event.preventDefault()
     event.stopPropagation()
   }
-
+  
   // Store current scroll position
   const scrollY = window.scrollY
-
+  const scrollX = window.scrollX
+  
+  // Toggle the view mode
   viewMode.value = viewMode.value === 'side-by-side' ? 'difference' : 'side-by-side'
-
+  
   // Restore scroll position after Vue updates DOM
-  requestAnimationFrame(() => {
-    window.scrollTo(0, scrollY)
+  // Use nextTick to ensure DOM has updated
+  nextTick(() => {
+    window.scrollTo(scrollX, scrollY)
   })
 }
 </script>
@@ -102,6 +105,9 @@ const toggleView = (event) => {
   gap: var(--spacing-6);
   scroll-margin: 0;
   scroll-snap-align: none;
+  /* Prevent iOS momentum scroll during toggle */
+  -webkit-overflow-scrolling: auto;
+  overscroll-behavior: contain;
 }
 
 .toggle-container:hover {
@@ -240,6 +246,7 @@ const toggleView = (event) => {
 
 .toggle-button:focus {
   scroll-behavior: auto;
+  outline-offset: 2px;
 }
 
 /* Reduced motion support */
