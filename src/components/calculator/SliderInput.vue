@@ -131,6 +131,9 @@ const sliderStyle = computed(() => {
       #00ff88 66%,
       #00ff88 100%
     )`
+    
+    // Track gradient for webkit browsers (mobile)
+    baseStyle['--track-gradient'] = `linear-gradient(to right, #ff4444 0%, #ff9500 50%, #00ff88 100%)`
 
     baseStyle['--slider-thumb-color'] = sentiment.color
     baseStyle['--slider-fill-color'] = sentiment.color
@@ -144,6 +147,7 @@ const sliderStyle = computed(() => {
     )`
     baseStyle['--slider-fill-color'] = '#00d4ff'
     baseStyle['--slider-thumb-color'] = '#00d4ff'
+    baseStyle['--track-gradient'] = 'linear-gradient(to right, #00d4ff 0%, #00d4ff 100%)'
   }
 
   return baseStyle
@@ -259,17 +263,39 @@ const handleMouseUp = () => {
   height: 6px;
   border-radius: 3px;
   outline: none;
-  transition: background var(--duration-normal) var(--ease-in-out);
   cursor: pointer;
   touch-action: none; /* Prevent page scroll while dragging on touch devices */
   -webkit-tap-highlight-color: transparent;
-  background: var(--slider-background, linear-gradient(
+  background: transparent; /* Track styling handled by pseudo-elements */
+}
+
+/* Explicit track styling for Webkit/Chrome (mobile fix) */
+.slider-input::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
     to right,
-    #00d4ff 0%,
-    #00d4ff var(--slider-percentage),
-    #0a0e14 var(--slider-percentage),
+    var(--slider-fill-color, #00d4ff) 0%,
+    var(--slider-fill-color, #00d4ff) var(--slider-percentage, 50%),
+    #0a0e14 var(--slider-percentage, 50%),
     #0a0e14 100%
-  ));
+  );
+}
+
+/* Sentiment slider track gradient */
+.slider-input[data-sentiment-mode="true"]::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    var(--slider-fill-color, #ff4444) 0%,
+    var(--slider-fill-color, #ff4444) var(--slider-percentage, 50%),
+    #ff4444 var(--slider-percentage, 50%),
+    #ff4444 33%,
+    #ff9500 33%,
+    #ff9500 66%,
+    #00ff88 66%,
+    #00ff88 100%
+  );
 }
 
 /* Webkit browsers (Chrome, Safari, Edge) */
@@ -321,10 +347,24 @@ const handleMouseUp = () => {
   transform: scale(1.1);
 }
 
+/* Firefox track */
 .slider-input::-moz-range-track {
+  width: 100%;
   height: 6px;
   border-radius: 3px;
   background: #0a0e14;
+}
+
+/* Firefox progress (filled portion) */
+.slider-input::-moz-range-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--slider-fill-color, #00d4ff);
+}
+
+/* Firefox sentiment mode - use background gradient */
+.slider-input[data-sentiment-mode="true"]::-moz-range-track {
+  background: linear-gradient(to right, #ff4444 0%, #ff9500 50%, #00ff88 100%);
 }
 
 /* Touch target optimization - larger thumb and increased touch area on mobile */
@@ -334,6 +374,21 @@ const handleMouseUp = () => {
     padding: 16px 0;
     margin: -16px 0;
     background-clip: content-box;
+  }
+
+  .slider-input::-webkit-slider-runnable-track {
+    height: 12px;
+    border-radius: 6px;
+  }
+
+  .slider-input::-moz-range-track {
+    height: 12px;
+    border-radius: 6px;
+  }
+
+  .slider-input::-moz-range-progress {
+    height: 12px;
+    border-radius: 6px;
   }
 
   .slider-input::-webkit-slider-thumb {
