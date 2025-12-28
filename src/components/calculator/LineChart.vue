@@ -123,7 +123,7 @@ const chartData = computed(() => {
 
 const chartOptions = computed(() => {
   const options = { ...CHART_OPTIONS }
-  
+
   // Update Y-axis formatting for difference view
   if (props.viewMode === 'difference') {
     options.scales.y.ticks.callback = (value) => {
@@ -132,7 +132,7 @@ const chartOptions = computed(() => {
     // Y-axis starts from 0 for difference view
     options.scales.y.beginAtZero = true
   }
-  
+
   return options
 })
 </script>

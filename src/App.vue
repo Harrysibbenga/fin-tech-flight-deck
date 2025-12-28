@@ -30,10 +30,9 @@
         <OdometerDisplay :value="results.yearsGained" />
 
         <transition name="chart-fade" mode="out-in">
-          <div 
-            class="chart-wrapper" 
+          <div
+            class="chart-wrapper"
             :key="viewMode"
-            v-memo="[chartData.baseline, chartData.optimized, chartData.difference, viewMode]"
           >
             <LineChart
               :baseline-data="chartData.baseline"

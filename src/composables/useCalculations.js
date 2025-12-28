@@ -103,7 +103,7 @@ export function useCalculations(sliderValues) {
     let yearsGained = calculateYearsGained(baselineFinal, optimizedFinal, monthlySavings)
     // Ensure yearsGained is never 0 - show at least 0.1 for display purposes
     yearsGained = Math.max(0.1, yearsGained)
-    
+
     const valueDifference = optimizedFinal - baselineFinal
     const percentageGain = baselineFinal > 0
       ? ((optimizedFinal - baselineFinal) / baselineFinal) * 100
