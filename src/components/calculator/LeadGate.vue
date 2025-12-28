@@ -43,6 +43,9 @@
         </div>
 
         <p class="privacy-note">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" class="lock-icon">
+            <path d="M12 7V5a4 4 0 00-8 0v2M4 7h8a1 1 0 011 1v5a1 1 0 01-1 1H4a1 1 0 01-1-1V8a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
           We respect your privacy. Unsubscribe anytime.
         </p>
       </form>
@@ -125,10 +128,24 @@ const shareWhatsApp = () => {
 .lead-gate {
   margin: var(--spacing-12) 0;
   padding: var(--spacing-8);
-  background: var(--gradient-card);
-  border: 2px solid rgba(0, 212, 255, 0.2);
+  background: rgba(26, 31, 46, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.2);
   border-radius: var(--radius-xl);
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.lead-gate::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.3), transparent);
 }
 
 .lead-gate-content h3 {
@@ -154,7 +171,7 @@ const shareWhatsApp = () => {
 .email-input {
   flex: 1;
   padding: var(--spacing-4) var(--spacing-6);
-  background: var(--bg-primary);
+  background: #0a0e14;
   border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-full);
   color: var(--text-primary);
@@ -165,8 +182,8 @@ const shareWhatsApp = () => {
 
 .email-input:focus {
   outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.1);
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.2), 0 0 20px rgba(0, 212, 255, 0.3);
 }
 
 .email-input:invalid:not(:focus):not(:placeholder-shown) {
@@ -186,7 +203,7 @@ const shareWhatsApp = () => {
 
 .submit-button {
   padding: var(--spacing-4) var(--spacing-6);
-  background: var(--gradient-accent);
+  background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
   border: none;
   border-radius: var(--radius-full);
   color: white;
@@ -203,7 +220,8 @@ const shareWhatsApp = () => {
 
 .submit-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 212, 255, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 212, 255, 0.4),
+              0 0 20px rgba(0, 212, 255, 0.3);
 }
 
 .submit-button:active:not(:disabled) {
@@ -218,6 +236,18 @@ const shareWhatsApp = () => {
 .privacy-note {
   color: var(--text-tertiary);
   font-size: var(--text-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-3);
+}
+
+.lock-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
 }
 
 .success-download {

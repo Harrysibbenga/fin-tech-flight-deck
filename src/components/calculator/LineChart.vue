@@ -98,7 +98,7 @@ const chartData = computed(() => {
         label: 'Current Trajectory',
         data: props.baselineData,
         borderColor: 'rgba(139, 146, 168, 0.5)',
-        backgroundColor: 'rgba(139, 146, 168, 0.1)',
+        backgroundColor: 'transparent',
         borderWidth: 2,
         borderDash: [5, 5],
         tension: 0.4,
@@ -110,7 +110,13 @@ const chartData = computed(() => {
         label: 'Optimized Trajectory',
         data: props.optimizedData,
         borderColor: '#00d4ff',
-        backgroundColor: 'rgba(0, 212, 255, 0.1)',
+        backgroundColor: (context) => {
+          const ctx = context.chart.ctx
+          const gradient = ctx.createLinearGradient(0, 0, 0, context.chart.height)
+          gradient.addColorStop(0, 'rgba(0, 212, 255, 0)')
+          gradient.addColorStop(1, 'rgba(0, 212, 255, 0.15)')
+          return gradient
+        },
         borderWidth: 3,
         tension: 0.4,
         pointRadius: 0,
@@ -140,10 +146,11 @@ const chartOptions = computed(() => {
 <style scoped>
 .chart-container {
   background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: none;
   border-radius: var(--radius-lg);
   padding: var(--spacing-6);
   margin-bottom: var(--spacing-8);
+  outline: none;
 }
 
 @media (max-width: 768px) {

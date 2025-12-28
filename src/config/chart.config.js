@@ -25,6 +25,9 @@ export const CHART_OPTIONS = {
     mode: 'index',
     intersect: false
   },
+  layout: {
+    padding: 0
+  },
   plugins: {
     legend: {
       display: true,
@@ -58,27 +61,40 @@ export const CHART_OPTIONS = {
     }
   },
   scales: {
-    x: {
+    y: {
       grid: {
-        color: CHART_COLORS.grid,
-        borderColor: 'rgba(255, 255, 255, 0.1)',
+        color: 'rgba(255, 255, 255, 0.05)',
+        borderColor: 'rgba(255, 255, 255, 0.05)',
         drawBorder: false
       },
       ticks: {
-        color: CHART_COLORS.text,
-        font: { size: 12 }
+        color: '#8b92a8',
+        font: { size: 12 },
+        callback: (value) => `£${(value / 1000).toFixed(0)}k`
       }
     },
-    y: {
+    x: {
       grid: {
-        color: CHART_COLORS.grid,
-        borderColor: 'rgba(255, 255, 255, 0.1)',
+        color: 'rgba(255, 255, 255, 0.05)',
+        borderColor: 'rgba(255, 255, 255, 0.05)',
         drawBorder: false
       },
       ticks: {
         color: CHART_COLORS.text,
         font: { size: 12 },
-        callback: (value) => `£${(value / 1000).toFixed(0)}k`
+        callback: function(value, index, ticks) {
+          const label = this.getLabelForValue(value)
+          // Only show labels for Year 5, Year 10, Year 15, etc.
+          if (label && label.includes('Year')) {
+            const yearNum = parseInt(label.replace('Year ', ''))
+            if (yearNum % 5 === 0 && yearNum > 0) {
+              return label
+            }
+          }
+          return ''
+        },
+        maxRotation: 0,
+        autoSkip: false
       }
     }
   }
