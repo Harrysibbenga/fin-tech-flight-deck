@@ -3,9 +3,17 @@ import { DEBOUNCE_DELAY } from '@/utils/constants'
 
 /**
  * Composable for managing slider state with debouncing
+ * 
+ * Debounces slider updates to improve performance during rapid value changes.
+ * Updates UI immediately but delays callback execution.
+ * 
  * @param {number} initialValue - Initial slider value
- * @param {Function} callback - Optional callback to call after debounce
- * @returns {Object} Slider state and methods
+ * @param {Function|null} callback - Optional callback function called after debounce delay (default: 16ms)
+ * @returns {Object} Slider state and control methods
+ *   @returns {import('vue').Ref<number>} value - Current slider value (updates immediately)
+ *   @returns {import('vue').Ref<number>} debouncedValue - Debounced slider value
+ *   @returns {Function} updateValue - Update slider value with debouncing
+ *   @returns {Function} reset - Reset slider to initial value
  */
 export function useSlider(initialValue = 0, callback = null) {
   const value = ref(initialValue)
