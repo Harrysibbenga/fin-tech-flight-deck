@@ -29,6 +29,7 @@ import {
   Filler
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
+import annotationPlugin from 'chartjs-plugin-annotation'
 import { CHART_OPTIONS } from '@/config/chart.config'
 
 // Register Chart.js components (tree-shaking)
@@ -40,7 +41,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
+  annotationPlugin
 )
 
 const props = defineProps({
@@ -200,6 +202,69 @@ const chartOptions = computed(() => {
 
   // Use circle point style for cleaner look
   options.plugins.legend.labels.usePointStyle = true
+
+  // Add milestone markers at Year 10, 20, 30
+  // Note: Chart.js uses 0-indexed data indices, so Year 10 = index 9, Year 20 = index 19, Year 30 = index 29
+  if (props.viewMode === 'side-by-side') {
+    options.plugins.annotation = {
+      annotations: {
+        year10: {
+          type: 'line',
+          xMin: 9, // Year 10 (0-indexed)
+          xMax: 9,
+          borderColor: 'rgba(255, 255, 255, 0.1)',
+          borderWidth: 1,
+          borderDash: [4, 4],
+          label: {
+            display: true,
+            content: 'Year 10',
+            position: 'start',
+            backgroundColor: 'rgba(26, 31, 46, 0.9)',
+            color: '#8b92a8',
+            font: { size: 10 },
+            padding: 4,
+            borderRadius: 4
+          }
+        },
+        year20: {
+          type: 'line',
+          xMin: 19, // Year 20 (0-indexed)
+          xMax: 19,
+          borderColor: 'rgba(255, 255, 255, 0.1)',
+          borderWidth: 1,
+          borderDash: [4, 4],
+          label: {
+            display: true,
+            content: 'Year 20',
+            position: 'start',
+            backgroundColor: 'rgba(26, 31, 46, 0.9)',
+            color: '#8b92a8',
+            font: { size: 10 },
+            padding: 4,
+            borderRadius: 4
+          }
+        },
+        year30: {
+          type: 'line',
+          xMin: 29, // Year 30 (0-indexed)
+          xMax: 29,
+          borderColor: 'rgba(0, 212, 255, 0.3)',
+          borderWidth: 2,
+          borderDash: [4, 4],
+          label: {
+            display: true,
+            content: 'Target',
+            position: 'end',
+            backgroundColor: 'rgba(0, 212, 255, 0.2)',
+            color: '#00d4ff',
+            font: { size: 11, weight: 'bold' },
+            padding: 4,
+            borderRadius: 4
+          }
+        }
+      }
+    }
+  }
 
   return options
 })
